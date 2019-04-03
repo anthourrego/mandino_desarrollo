@@ -36,11 +36,11 @@
 
   		if ($select_usuario['cantidad_registros'] == 1) {
 
-        $config = $bd->consulta("SELECT * FROM mandino_configuracion WHERE mc_id = :mc_id LIMIT 1", array(":mc_id" => $select_usuario[0]['fk_mc']));
+        $config = $bd->consulta("SELECT * FROM mandino_temas WHERE mt_id = :mt_id LIMIT 1", array(":mt_id" => $select_usuario[0]['fk_mt']));
         
         if ($config['cantidad_registros'] != 0) {
-          $navbar = $config[0]['mc_navbar'];
-          $logo_navbar = $config[0]['mc_logo_navbar'];
+          $navbar = $config[0]['mt_navbar'];
+          $logo_navbar = $config[0]['mt_logo_navbar'];
         }else{
           $navbar = "navbar-light bg-white";
           $logo_navbar = "logo.png";
