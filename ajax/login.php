@@ -28,23 +28,41 @@
   		$bd = new Bd();
   		$bd->conectar();
 
-  		$select_usuario = $bd->consulta("SELECT * FROM usuarios WHERE usuario = :usuario AND password = :password", array(":usuario" => $log_usuario, ":password" => $log_password));
+  		$select_usuario = $bd->consulta("SELECT * FROM usuarios WHERE u_usuario = :usuario AND u_password = :password AND u_activo = 1", array(":usuario" => $log_usuario, ":password" => $log_password));
 
-      $bd->desconectar();
+      if ($select_usuario['cantidad_registros'] == 0) {
+        $select_usuario = $bd->consulta("SELECT * FROM usuarios WHERE u_nro_documento = :usuario AND u_password = :password AND u_activo = 1", array(":usuario" => $log_usuario, ":password" => $log_password));
+      }
 
   		if ($select_usuario['cantidad_registros'] == 1) {
-  			
-  			$session = new Session();
-  			$array_session_usuario = array('nombre' => $select_usuario[0]['nombre'] . " " . $select_usuario[0]['nombre2'] . " " . $select_usuario[0]['apellido'] . " " . $select_usuario[0]['apellido2'],
-  																			'usuario' => $select_usuario[0]['usuario'],
-  																			'id' => $select_usuario[0]['id']
+
+        $config = $bd->consulta("SELECT * FROM mandino_configuracion WHERE mc_id = :mc_id LIMIT 1", array(":mc_id" => $select_usuario[0]['fk_mc']));
+        
+        if ($config['cantidad_registros'] != 0) {
+          $navbar = $config[0]['mc_navbar'];
+          $logo_navbar = $config[0]['mc_logo_navbar'];
+        }else{
+          $navbar = "navbar-light bg-white";
+          $logo_navbar = "logo.png";
+        }
+
+        $bd->desconectar();
+
+        $session = new Session();
+
+  			$array_session_usuario = array('nombre' => $select_usuario[0]['u_nombre1'] . " " . $select_usuario[0]['u_nombre2'] . " " . $select_usuario[0]['u_apellido1'] . " " . $select_usuario[0]['u_apellido2'],
+  																			'usuario' => $select_usuario[0]['u_usuario'],
+                                        'foto' => $select_usuario[0]['u_foto'],
+  																			'id' => $select_usuario[0]['u_id'],
+                                        'navbar' => $navbar,
+                                        'logo_navbar' => $logo_navbar,
   																		);
 
   			$session->set('usuario', $array_session_usuario);
 
   			echo "Ok";
   		}else{
-  			"Usuario y/o contraseña incorrecta";
+  			echo "Usuario y/o contraseña incorrecta";
   		}
   	}else{
   		echo "Algunos campos se encuentran en blanco";

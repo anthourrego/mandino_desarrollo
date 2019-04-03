@@ -39,33 +39,96 @@
     echo $lib->mandino();
   ?>
 </head>
-<body>
-	<!-- Barra de Manú -->
-  <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow">
-    <div class="container">
-      <a class="navbar-brand logo-barra" href="<?php echo RUTA_RAIZ ?>">
-        <img src="img/logo.png" alt="">
-      </a>
-      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
+<body class="overflow-hidden">
+		
+	<object type="text/html" id="contenido" name="contenido" data="" class="w-100 vh-100"></object>
 
-      <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <ul class="navbar-nav ml-auto usuario-barra">
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-              <img class="rounded-circle" width="40px" src="http://www.consumerelectronicsgroup.com/intranet/img/usuarios/0.png">
-            </a>  
-            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
-              <span class="dropdown-item-text text-center"><?php echo $usuario['nombre'] ?></span>
-              <!--<a class="dropdown-item" href="perfil"><i class="fas fa-user-edit"></i> Editar Perfil</a>-->
-              <div class="dropdown-divider"></div>
-              <a class="dropdown-item" href="<?php echo $ruta_raiz; ?>clases/sessionCerrar"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
+
+  <!-- Modal de Cargando -->
+  <div class="modal fade modal-cargando" id="cargando" tabindex="1" role="dialog" aria-labelledby="cargandoTitle" aria-hidden="true" data-keyboard="false" data-focus="true" data-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="box-loading">
+        <div class="loader">
+          <div class="loader-1">
+            <div class="loader-2">
             </div>
-          </li>
-        </ul>
+          </div>
+        </div>
+        <div>
+          <img class="w-50" src="<?php RUTA_RAIZ; ?>img/cargando.png" alt="">
+        </div>
       </div>
     </div>
-  </nav>
+  </div>
+
+  <!-- Modal Configuracion -->
+  <div class="modal fade" id="modal-link" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <object type="text/html" id="contenido-modal" name="contenido-modal" class="w-100" style="height: 75vh"></object>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Sesion Cerrada -->
+  <div class="modal fade" id="cerrarSession" tabindex="-1" role="dialog" aria-labelledby="cerrarSessionTitle" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-body text-center">
+          <i class="fas fa-exclamation fa-7x text-warning mt-3 mb-3"></i>
+          <h2>Lo sentimos, la sesión ha caducado</h2>
+          Favor ingresar nuevamente, Gracias.
+        </div>
+        <div class="modal-footer d-flex justify-content-center">
+          <a class="btn btn-primary" href="<?php echo $ruta_raiz; ?>">Cerrar <i class="fas fa-times"></i></i></a>
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
+<script type="text/javascript">
+	$("#cargando").modal("show");
+	var idleTime = 0; 
+	$(function(){
+		//Tiempo en que valida la session
+    window.idleInterval = setInterval(validarSession, 600000); // 10 minute 
+
+    if (localStorage.mandinourl == null) {
+      $("#contenido").attr("data", "cursos");
+    }else{
+      $("#contenido").attr("data", localStorage.mandinourl);
+    }
+
+		setTimeout(function() {
+      $("#cargando").modal("hide");
+    }, 1000);
+	});
+
+	function validarSession(){
+    $.ajax({
+      type: 'POST',
+      url: "<?php echo $ruta_raiz ?>ajax/usuarios",
+      data: {accion: "sessionActiva"},
+      success: function(data){
+        if (data == 0) {
+          localStorage.removeItem("mandinourl");
+          $("#cerrarSession").modal("show");
+        }
+      },
+      error: function(data){
+        alertify.error("No se ha podido validar la session");
+      }
+    });
+  }
+
+	function cerrarSesion(){
+    localStorage.removeItem("mandinourl");
+    window.location.href='<?php echo RUTA_RAIZ ?>clases/sessionCerrar';
+  }
+</script>
 </html>

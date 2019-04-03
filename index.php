@@ -103,10 +103,12 @@
             <div class="form-group">
               <input class="form-control" type="text" id="m_usuario" name="m_usuario" placeholder="Usuario o Nro Documento" autofocus required>
             </div>
-            <div class="input-group">
-              <input class="form-control" type="password" id="m_password" name="m_password" placeholder="Contraseña" required>
-              <div class="input-group-append">
-                <button class="btn btn-secondary btn-login" type="button" id="btnEye" data-toggle="button" aria-pressed="false" autocomplete="off"><i id="passicon" class="fas fa-eye"></i></button>
+            <div class="form-group">
+              <div class="input-group">
+                <input class="form-control" type="password" id="m_password" name="m_password" placeholder="Contraseña" required>
+                <div class="input-group-append">
+                  <button class="btn btn-secondary btn-login" type="button" id="btnEye" data-toggle="button" aria-pressed="false" autocomplete="off"><i id="passicon" class="fas fa-eye"></i></button>
+                </div>
               </div>
             </div>
             <div class="text-center mt-3">
@@ -175,23 +177,5 @@
       }
     });
   }); 
-
-  (function() {
-    'use strict';
-    window.addEventListener('load', function() {
-      // Fetch all the forms we want to apply custom Bootstrap validation styles to
-      var forms = document.getElementsByClassName('needs-validation');
-      // Loop over them and prevent submission
-      var validation = Array.prototype.filter.call(forms, function(form) {
-        form.addEventListener('submit', function(event) {
-          if (form.checkValidity() === false) {
-            event.preventDefault();
-            event.stopPropagation();
-          }
-          form.classList.add('was-validated');
-        }, false);
-      });
-    }, false);
-  })();
 </script>
 </html>

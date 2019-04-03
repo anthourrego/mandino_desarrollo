@@ -14,7 +14,7 @@
   define("RUTA_RAIZ","/mandino_desarrollo/"); 
 
   //Ruta de almacenamiento
-  define("RUTA_ALMACENAMIENTO", "almacenamiento/"); 
+  define("RUTA_ALMACENAMIENTO", "/mandino_desarrollo/almacenamiento/"); 
 
   //Zona Horaria
   date_default_timezone_set('America/Bogota');

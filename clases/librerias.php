@@ -51,7 +51,8 @@
     public function jqueryValidate(){
       $this->cadena_libreria = '
   <script type="text/javascript" src="'. $this->ruta_libreria .'jquery-validate/jquery.validate.min.js"></script>
-  <script type="text/javascript" src="'. $this->ruta_libreria .'jquery-validate/localization/messages_es.min.js"></script>';
+  <script type="text/javascript" src="'. $this->ruta_libreria .'jquery-validate/localization/messages_es.min.js"></script>
+  <script type="text/javascript" src="'. $this->ruta_libreria .'jquery-validate/validacion.js"></script>';
       return($this->cadena_libreria); 
     }
 
@@ -145,25 +146,10 @@
 
     public function cambioPantalla(){
       $this->cadena_libreria = '
-      <!-- Modal Archivos -->
-      <div class="modal fade" id="modalArchivos" tabindex="-1" role="dialog">
-        <div class="modal-dialog modal-xl">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title" id="modalArchivosTitulo"></h5>
-              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-              </button>
-            </div>
-            <iframe class="w-100" id="contenidoArchivos" style="height: 80vh; border: 0px;"></iframe>
-            <!--<object style="height: 80vh" class="w-100" id="contenidoArchivos"></object>-->
-          </div>
-        </div>
-      </div>
       <script type="text/javascript">
         top.$("#cargando").modal("show");
         $(function(){
-          localStorage.url = window.location;
+          localStorage.mandinourl = window.location;
           var insideIframe = window.top !== window.self;
           if(!insideIframe){
             window.location.href="' . RUTA_RAIZ . 'central";
@@ -173,24 +159,12 @@
            top.$("#cargando").modal("hide");
           }, 1000);
 
-          $("#contenidoArchivos").on("load",function(){
-            $("#modalArchivos").modal("show");
-            setTimeout(function() {
-              top.$("#cargando").modal("hide");
-            }, 1000);
-          });
-
-          /*$(".link").on("click", function(event){
-            top.$("#cargando").modal("show");
+          $(".modal-link").on("click", function(event){
             event.preventDefault();
-            localStorage.url2 = window.location;
-            top.$("#object-contenido").attr("data", $(this).attr("href"));
-          });
-
-          $(".link-atras").on("click", function(){
             top.$("#cargando").modal("show");
-            top.$("#object-contenido").attr("data", localStorage.url2);
-          });*/ 
+            top.$("#contenido-modal").attr("data", $(this).attr("href"));
+            top.$("#modal-link").modal("show");
+          });
         });
       </script>';
       return $this->cadena_libreria;
