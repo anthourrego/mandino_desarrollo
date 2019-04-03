@@ -147,9 +147,11 @@
       },
       highlight: function (element, errorClass, validClass) {
         $(element).addClass('is-invalid');
+        $(element).removeClass('is-valid');
       },
       unhighlight: function (element, errorClass, validClass) {
         $(element).removeClass('is-invalid');
+        $(element).addClass('is-valid');
       }
     });
 
