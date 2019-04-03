@@ -51,8 +51,7 @@
     public function jqueryValidate(){
       $this->cadena_libreria = '
   <script type="text/javascript" src="'. $this->ruta_libreria .'jquery-validate/jquery.validate.min.js"></script>
-  <script type="text/javascript" src="'. $this->ruta_libreria .'jquery-validate/localization/messages_es.min.js"></script>
-  <script type="text/javascript" src="'. $this->ruta_libreria .'jquery-validate/validacion.js"></script>';
+  <script type="text/javascript" src="'. $this->ruta_libreria .'jquery-validate/localization/messages_es.min.js"></script>';
       return($this->cadena_libreria); 
     }
 
