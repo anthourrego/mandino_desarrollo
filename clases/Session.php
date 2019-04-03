@@ -38,5 +38,12 @@
 			return($retorno);
 		}
 		
+		public function setCampo($nombre, $campo, $valor){
+			if(isset($_SESSION[$nombre.$this->ambiente][$campo])){
+				$_SESSION[$nombre.$this->ambiente][$campo]='';
+				unset($_SESSION[$nombre.$this->ambiente][$campo]);
+			}
+			$_SESSION[$nombre.$this->ambiente][$campo]=$valor;
+		}
 	}
 ?>
