@@ -44,7 +44,7 @@
 <script type="text/javascript">
   $(function(){
     $.ajax({
-      url: '<?php $ruta_raiz ?>ajax/cursos',
+      url: 'acciones',
       type: 'POST',
       dataType: 'json',
       data: {accion: 'datosCurso', curso: <?php echo($_GET['curso']); ?>},
@@ -61,7 +61,7 @@
     });
       
     $.ajax({
-      url: '<?php echo($ruta_raiz); ?>ajax/unidades',
+      url: 'acciones',
       type: 'POST',
       dataType: 'html',
       data: {accion: 'modulosUnidades', curso: '<?php echo($_GET['curso']); ?>', user: '<?php echo $usuario['id']; ?>'},

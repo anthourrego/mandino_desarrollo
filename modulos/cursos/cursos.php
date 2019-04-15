@@ -42,7 +42,7 @@
 <script type="text/javascript">
 	$(function(){
 		$.ajax({
-			url: '<?php echo $ruta_raiz; ?>ajax/cursos',
+			url: 'acciones',
 			type: 'POST',
 			dataType: 'html',
 			data: {accion: "centralCursos", id_usu: <?php echo($usuario['id']); ?>},

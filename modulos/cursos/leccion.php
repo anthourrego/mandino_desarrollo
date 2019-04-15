@@ -159,17 +159,19 @@
 
 
   if (!isset($_GET['less'])) {
+
     //Validamos la ultima leccion en la que estaba y la redireccionamos a dicha leccion segun la unidad
     $sql_select_ml = $db->consulta("SELECT * FROM mandino_lecciones WHERE fk_mu = :fk_mu", array(":fk_mu" => $_GET['uni']));
-   
-    for ($i=0; $i < $sql_select_ml['cantidad_registros']; $i++) { 
-      $sql_select_mlv = $db->consulta("SELECT * FROM mandino_lecciones_visto WHERE fk_usuario = :fk_usuario AND fk_ml = :fk_ml", array( ":fk_usuario" => $usuario['id'], ":fk_ml" => $sql_select_ml[$i]['ml_id']));
 
-      $ultimaLeccionVista = $sql_select_mlv[0]['fk_ml'];
+    for ($i=0; $i < $sql_select_ml['cantidad_registros']; $i++) { 
+      $sql_select_mlv = $db->consulta("SELECT * FROM mandino_lecciones_visto WHERE fk_usuario = :fk_usuario AND fk_ml = :fk_ml", array(":fk_usuario" => $usuario['id'], ":fk_ml" => $sql_select_ml[$i]['ml_id']));
+      if ($sql_select_mlv['cantidad_registros'] == 1) {
+        $ultimaLeccionVista = $sql_select_mlv[0]['fk_ml'];
+      }
     }
-    header('Location: ' . $ruta_raiz . 'leccion?uni=' . $_GET['uni'] . '&curso=' . $_GET['curso'] . '&less=' . $ultimaLeccionVista);
+    header('Location: leccion?uni=' . $_GET['uni'] . '&curso=' . $_GET['curso'] . '&less=' . $ultimaLeccionVista);
   }elseif ($_GET['less'] == 0 && $_GET['less'] == "") {
-    header('Location: ' . $ruta_raiz . 'unidades?curso=' . $_GET['curso'] );
+    header('Location: unidades?curso=' . $_GET['curso'] );
   }
 
   //Se agrega la leccion actual si no se a visto anteriormente
@@ -196,15 +198,16 @@
     $sql_ml = $db->consulta("SELECT * FROM mandino_lecciones WHERE fk_mu = :id_mu ORDER BY ml_orden ASC", array(":id_mu" => $sql_mu[$i]['mu_id']));
 
     for ($j=0; $j < $sql_ml['cantidad_registros']; $j++) { 
-      if (validarLeccion($sql_ml[0]['ml_id'], $usuario['id']) == 1) {
+      if (validarLeccion($sql_ml[$j]['ml_id'], $usuario['id']) == 1) {
         if (@$_GET['less'] == $sql_ml[$j]['ml_id']) {
-          $lista .= '<a href="' . $ruta_raiz . "leccion?uni=" . $sql_mu[$i]['mu_id'] . "&less=" . $sql_ml[$j]['ml_id'] . '&curso=' . $_GET['curso'] . '" class="list-group-item active">' . $sql_ml[$j]['ml_nombre'] . '</a>';
+          $lista .= '<a href="leccion?uni=' . $sql_mu[$i]['mu_id'] . '&less=' . $sql_ml[$j]['ml_id'] . '&curso=' . $_GET['curso'] . '" class="list-group-item active">' . $sql_ml[$j]['ml_nombre'] . '</a>';
         }else{
-          $lista .= '<a href="' . $ruta_raiz . "leccion?uni=" . $sql_mu[$i]['mu_id'] . "&less=" . $sql_ml[$j]['ml_id'] . '&curso=' . $_GET['curso'] . '" class="list-group-item">' . $sql_ml[$j]['ml_nombre'] . '</a>';
+          $lista .= '<a href="leccion?uni=' . $sql_mu[$i]['mu_id'] . '&less=' . $sql_ml[$j]['ml_id'] . '&curso=' . $_GET['curso'] . '" class="list-group-item">' . $sql_ml[$j]['ml_nombre'] . '</a>';
         }
       }else{
         $lista .= '<a href="#" class="list-group-item disabled">' . $sql_ml[$j]['ml_nombre'] . '</a>';
       }
+
     }
   }
 
@@ -220,13 +223,13 @@
   }
 
   if (validar(@$btnAnt, $_GET['uni']) == 1) {
-    $btnAntHtml = '<a class="btn btn-success" href="' . $ruta_raiz . 'leccion?uni=' . $_GET['uni'] . '&less=' . $btnAnt . '&curso=' . $_GET['curso'] . '"><i class="fas fa-angle-left"></i> Anterior</a>';
+    $btnAntHtml = '<a class="btn btn-success" href="leccion?uni=' . $_GET['uni'] . '&less=' . $btnAnt . '&curso=' . $_GET['curso'] . '"><i class="fas fa-angle-left"></i> Anterior</a>';
   }else{
     $btnAntHtml = '<button type="button" class="btn btn-success" disabled><i class="fas fa-angle-left"></i> Anterior</button>';
   }
 
   if (validar(@$btnSig, $_GET['uni']) == 1) {
-    $btnSigHtml = '<a class="btn btn-success" href="' . $ruta_raiz . 'leccion?uno=' . $_GET['uni'] . '&less=' . $btnSig . '&curso=' . $_GET['curso'] . '">Siguiente <i class="fas fa-angle-right"></i></a>';
+    $btnSigHtml = '<a class="btn btn-success" href="leccion?uni=' . $_GET['uni'] . '&less=' . $btnSig . '&curso=' . $_GET['curso'] . '">Siguiente <i class="fas fa-angle-right"></i></a>';
   }else{
     $btnSigHtml = '<button type="button" class="btn btn-success" disabled>Siguiente <i class="fas fa-angle-right"></i></button>';
   } 

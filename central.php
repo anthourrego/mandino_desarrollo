@@ -99,7 +99,7 @@
     window.idleInterval = setInterval(validarSession, 600000); // 10 minute 
 
     if (localStorage.mandinourl == null) {
-      $("#contenido").attr("data", "cursos");
+      $("#contenido").attr("data", "modulos/cursos/cursos");
     }else{
       $("#contenido").attr("data", localStorage.mandinourl);
     }

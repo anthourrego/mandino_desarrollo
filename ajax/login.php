@@ -28,10 +28,10 @@
   		$bd = new Bd();
   		$bd->conectar();
 
-  		$select_usuario = $bd->consulta("SELECT * FROM usuarios WHERE u_usuario = :usuario AND u_password = :password AND u_activo = 1", array(":usuario" => $log_usuario, ":password" => $log_password));
+  		$select_usuario = $bd->consulta("SELECT * FROM mandino_usuarios WHERE u_usuario = :usuario AND u_password = :password AND u_activo = 1", array(":usuario" => $log_usuario, ":password" => $log_password));
 
       if ($select_usuario['cantidad_registros'] == 0) {
-        $select_usuario = $bd->consulta("SELECT * FROM usuarios WHERE u_nro_documento = :usuario AND u_password = :password AND u_activo = 1", array(":usuario" => $log_usuario, ":password" => $log_password));
+        $select_usuario = $bd->consulta("SELECT * FROM mandino_usuarios WHERE u_nro_documento = :usuario AND u_password = :password AND u_activo = 1", array(":usuario" => $log_usuario, ":password" => $log_password));
       }
 
   		if ($select_usuario['cantidad_registros'] == 1) {
@@ -56,10 +56,10 @@
   																			'id' => $select_usuario[0]['u_id'],
                                         'navbar' => $navbar,
                                         'logo_navbar' => $logo_navbar,
+                                        'tema' => $select_usuario[0]['fk_mt']
   																		);
 
   			$session->set('usuario', $array_session_usuario);
-
   			echo "Ok";
   		}else{
   			echo "Usuario y/o contraseña incorrecta";

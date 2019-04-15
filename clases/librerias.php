@@ -102,14 +102,20 @@
       //Este nos ayuda con los input fila en boostrap se inicia como $(function(){bsCustomFileInput.init();});
       $this->cadena_libreria = '
       <!-- bs-custom-file-input -->
-      <script type="text/javascript" src="' . $this->ruta_libreria . 'bs-custom-file-input/bs-custom-file-input.min.js"></script>';
+      <script type="text/javascript" src="' . $this->ruta_libreria . 'bs-custom-file-input/bs-custom-file-input.min.js"></script>
+      <script type="text/javascript">
+        $(function(){
+          bsCustomFileInput.init();
+        });
+      </script>';
       return $this->cadena_libreria;
     }
 
     public function mandino(){
       $this->cadena_libreria = '
       <!-- Mandino -->
-      <link rel="stylesheet" href="' . $this->ruta_libreria . 'mandino/mandino.css"/>';
+      <link rel="stylesheet" href="' . $this->ruta_libreria . 'mandino/mandino.css"/>
+      <script type="text/javascript" src="' . $this->ruta_libreria . 'mandino/mandino.js"></script>';
       return $this->cadena_libreria;
     }
 
