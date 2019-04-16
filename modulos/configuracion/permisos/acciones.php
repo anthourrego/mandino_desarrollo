@@ -22,18 +22,26 @@
 
     $permiso = $db->consulta("SELECT mp2.mp_id AS id, mp2.mp_nombre AS nombre, mp2.mp_tag AS tag, mp2.mp_icono AS icono, mp2.mp_ruta AS ruta, mp2.mp_fecha_creacion AS fecha, mp1.mp_tag AS padre FROM mandino_permisos AS mp1 INNER JOIN mandino_permisos AS mp2 ON mp1.mp_id = mp2.fk_mp WHERE mp2.mp_id = :mp_id1", array(":mp_id1" => $_POST['permiso']));
 
+    if ($permiso['cantidad_registros'] == 0) {
+      $permiso = $db->consulta("SELECT mp_id AS id, mp_nombre AS nombre, mp_tag AS tag, mp_icono AS icono, mp_ruta AS ruta, mp_fecha_creacion AS fecha, fk_mp AS padre FROM mandino_permisos WHERE mp_id = :mp_id", array(":mp_id" => $_POST['permiso']));
+    }
+
     $db->desconectar();
 
     return json_encode($permiso[0]);
   }
   
-  function acordeon($permiso = 1){
+  function acordeon($permiso = 0){
     $db = new Bd();
     $db->conectar();
     //global $db;
     $acordeon = "";
 
-    $sql = $db->consulta("SELECT * FROM mandino_permisos WHERE fk_mp = :fk_mp", array(":fk_mp" => $permiso));
+    if ($permiso == 0) {
+      $sql = $db->consulta("SELECT * FROM mandino_permisos WHERE fk_mp IS NULL");
+    }else{
+      $sql = $db->consulta("SELECT * FROM mandino_permisos WHERE fk_mp = :fk_mp", array(":fk_mp" => $permiso));
+    }
     
     $acordeon .= '<div class="accordion border-bottom" id="accordion' . $permiso . '">';
 
@@ -131,6 +139,33 @@
     $db->desconectar();
   
     return "Ok";
+  }
+
+  function formPemisos(){
+
+    borarPemisosUsuario($_POST['idUsu']);
+
+    $db = new Bd();
+    $db->conectar();
+
+    if (isset($_POST['per'])) {
+      foreach ($_POST['per'] as $per) {
+        $db->sentencia("INSERT INTO mandino_permisos_usuarios (fk_mp, fk_u, mpu_creador, mpu_fecha_creacion) VALUES(:fk_mp, :fk_u, :mpu_creador, :mpu_fecha_creacion)", array(":fk_mp" => $per, ":fk_u" => $_POST['idUsu'], ":mpu_creador" => $_POST['usuarioCreador'], ":mpu_fecha_creacion" => date('Y-m-d H:i:s')));
+      }
+    }
+
+    $db->desconectar();
+
+    return "Ok";
+  }
+
+  function borarPemisosUsuario($id){
+    $db = new Bd();
+    $db->conectar();
+
+    $db->sentencia("DELETE FROM mandino_permisos_usuarios WHERE fk_u = :fk_u", array(":fk_u" => $id));
+
+    $db->desconectar();
   }
     
   if(@$_REQUEST['accion']){

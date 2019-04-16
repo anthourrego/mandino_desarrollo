@@ -14,6 +14,7 @@
   require_once($ruta_raiz . "clases/Conectar.php");
   require_once($ruta_raiz . "clases/SessionActiva.php");
   require_once($ruta_raiz . "clases/funciones_generales.php");
+  require_once($ruta_raiz . "clases/Permisos.php");
   require_once($ruta_raiz . "clases/Upload.php");
 
   function actualizarTema(){
@@ -85,6 +86,9 @@
   }
 
   function listaUsuario(){
+    $permisos = new Permisos();
+    $session = new Session();
+    $usuario = $session->get('usuario');
     $db = new Bd();
     $db->conectar();
     $respuesta = "";
@@ -105,14 +109,23 @@
                         <td class='align-middle'>" . $usuarios[$i]['u_usuario'] . "</td>
                         <td class='align-middle'>" . $usuarios[$i]['u_nombre1'] . " " . $usuarios[$i]['u_nombre2'] . " " . $usuarios[$i]['u_apellido1'] . " " . $usuarios[$i]['u_apellido2'] . "</td>
                         <td class='align-middle'>" . $usuarios[$i]['u_telefono'] . "</td>
-                        <td class='d-flex justify-content-around'>
-                          <button class='btn btn-info' onClick='permisos(". $usuarios[$i]['u_id'] .")'><i class='fas fa-user-shield'></i></button>
-                          <button class='btn btn-success' onClick='editarUsuario(". $usuarios[$i]['u_id'] .")'><i class='fas fa-user-edit'></i></button>";
-                        if($usuarios[$i]['u_activo'] == 1){
-                          $respuesta .= "<button class='btn btn-danger' onClick='inHabilitarUsuario(" . $usuarios[$i]['u_id'] . ", 0)'><i class='fas fa-user-minus'></i></button>";
-                        }elseif ($usuarios[$i]['u_activo'] == 0) {
-                          $respuesta .= "<button class='btn btn-primary' onClick='inHabilitarUsuario(" . $usuarios[$i]['u_id'] . ", 1)'><i class='fas fa-user-check'></i></button>";
-                        }
+                        <td class='d-flex justify-content-around'>";
+
+        if ($permisos->validarPermiso($usuario['id'], "usuarios_editar")) {
+          $respuesta .= "<button class='btn btn-success' onClick='editarUsuario(". $usuarios[$i]['u_id'] .")'><i class='fas fa-user-edit'></i></button>";
+        }
+
+        if ($permisos->validarPermiso($usuario['id'], 'usuarios_permisos')) {
+          $respuesta .= "<button class='btn btn-info' onClick='permisos(". $usuarios[$i]['u_id'] .")'><i class='fas fa-user-shield'></i></button>";
+        }
+
+        if ($permisos->validarPermiso($usuario['id'], "usuarios_habilitar_inhabilitar")) {
+          if($usuarios[$i]['u_activo'] == 1){
+            $respuesta .= "<button class='btn btn-danger' onClick='inHabilitarUsuario(" . $usuarios[$i]['u_id'] . ", 0)'><i class='fas fa-user-minus'></i></button>";
+          }elseif ($usuarios[$i]['u_activo'] == 0) {
+            $respuesta .= "<button class='btn btn-primary' onClick='inHabilitarUsuario(" . $usuarios[$i]['u_id'] . ", 1)'><i class='fas fa-user-check'></i></button>";
+          }
+        }
 
         $respuesta .= "</td>
                       </tr>";

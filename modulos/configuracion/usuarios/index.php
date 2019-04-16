@@ -11,14 +11,19 @@
   }
 
   include_once($ruta_raiz . 'clases/librerias.php');
+  include_once($ruta_raiz . 'clases/funciones_generales.php');
   include_once($ruta_raiz . 'clases/sessionActiva.php');
+  include_once($ruta_raiz . 'clases/Permisos.php');
   include_once($ruta_raiz . 'clases/Conectar.php');
 
   $session = new Session();
-
+  $permisos = new Permisos();
   $usuario = $session->get("usuario");
-
   $lib = new Libreria;
+
+  if ($permisos->validarPermiso($usuario['id'], "usuarios") == 0) {
+    header('Location: ' . $ruta_raiz . 'modulos/cursos/cursos');
+  }
 
 ?>
 
@@ -47,7 +52,13 @@
         <button type="button" class="btn btn-danger btn-usu" value="0"><i class="fas fa-user-alt-slash"></i> Inactivos</button>
         <button type="button" class="btn btn-secondary btn-usu" value="2"><i class="fas fa-users"></i> Todos</button>
       </div>
-      <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#crearUsuario"><i class="fas fa-user-plus"></i> Crear</button>
+      <?php  
+
+        if ($permisos->validarPermiso($usuario['id'], "usuarios_crear")) {
+          echo('<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#crearUsuario"><i class="fas fa-user-plus"></i> Crear</button>');
+        }
+
+      ?>
     </div>
     <table id="tabla" class="table table-bordered table-hover table-sm">
       <thead>
@@ -197,14 +208,12 @@
     <div class="modal-dialog modal-lg" role="document">
       <div class="modal-content">
         <div class="modal-header">
+          <h5 class="modal-title"><i class='fas fa-user-shield'></i> Permisos</h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
-        <div class="modal-body" id="contenido-permiso">
-          
-        </div>
-        <!--<object type="text/html" id="contenido-permiso" name="contenido-permiso" class="w-100" style="height: 75vh"></object>-->
+        <div class="modal-body mb-4" id="contenido-permiso"></div>
       </div>
     </div>
   </div>
@@ -462,20 +471,9 @@
   }
 
   function permisos(id){
-    $.ajax({
-      url: '../permisos/permisos_usuario.php',
-      type: 'POST',
-      data: {},
-      success: function(datos){
-        $("#contenido-permiso").empty();
-        $("#contenido-permiso").html(datos);
-      },
-      error: function(){
-        alertify.error("Error al cargar.");
-      }
-    });
-    
-    $("#modal-permisos").modal("show");
+    top.$("#cargando").modal("show");
+    top.$("#contenido-modal").attr("data", "<?php echo(RUTA_RAIZ); ?>/modulos/configuracion/permisos/permisos_usuario?idUsu="+id);
+    top.$("#modal-link").modal("show");
   }
     
 </script>

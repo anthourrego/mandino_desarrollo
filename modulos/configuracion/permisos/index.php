@@ -77,8 +77,15 @@
       </div>
       <div class="col-6">
         <div class="d-flex justify-content-around mb-2">
-          <button class="boton-per btn btn-primary disabled" disabled data-toggle="modal" data-target="#modal-agregarHijo"><i class="fas fa-plus"></i> Agregar Hijo</button>
-          <button class="boton-per btn btn-success disabled" disabled data-toggle="modal" data-target="#modal-editar"><i class="far fa-edit"></i> Editar</button>
+          <?php  
+            if ($permisos->validarPermiso($usuario['id'], "permisos_agregar_hijo")) {
+              echo('<button class="boton-per btn btn-primary disabled" disabled data-toggle="modal" data-target="#modal-agregarHijo"><i class="fas fa-plus"></i> Agregar Hijo</button>');
+            }
+
+            if ($permisos->validarPermiso($usuario['id'], "permisos_editar")) {
+              echo('<button class="boton-per btn btn-success disabled" disabled data-toggle="modal" data-target="#modal-editar"><i class="far fa-edit"></i> Editar</button>');
+            }
+          ?>
         </div>
         <table class="table">
           <tbody>
@@ -136,7 +143,7 @@
             </div>
             <div class="form-group">
               <label>Icono</label>
-              <input class="form-control" type="text" id="editIcono" name="editIcono" required>
+              <input class="form-control" type="text" id="editIcono" name="editIcono">
             </div>
             <div class="form-group">
               <label>Ruta <span class="text-danger">*</span></label>
@@ -209,7 +216,6 @@
       rules: {
         editNombre: "required",
         editEtiqueta: "required",
-        editIcono: "required",
         editRuta: "required"
       },
       errorElement: 'span',
