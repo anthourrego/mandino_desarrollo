@@ -68,7 +68,9 @@
       $this->cadena_libreria = '
   <!-- Data Tables -->
   <link rel="stylesheet" href="'. $this->ruta_libreria .'dataTables/css/dataTables.bootstrap4.min.css">
+  <link rel="stylesheet" href="'. $this->ruta_libreria .'dataTables/css/rowReorder.bootstrap4.min.css">
   <script src="'. $this->ruta_libreria .'dataTables/js/jquery.dataTables.js" charset="utf-8"></script>
+  <script src="'. $this->ruta_libreria .'dataTables/js/dataTables.rowReorder.min.js" charset="utf-8"></script>
   <script src="'. $this->ruta_libreria .'dataTables/js/dataTables.bootstrap4.min.js" charset="utf-8"></script>';
       return($this->cadena_libreria); 
     }

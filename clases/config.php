@@ -8,7 +8,7 @@
   define('db_charset', 'utf8');*/
 
   //Conexion a LA BASE DE DATOS DE mysql
-  define("BDNAME_MYSQL","consumer");
+  define("BDNAME_MYSQL","mandino");
   define("BDSERVER_MYSQL","localhost");
   define("BDUSER_MYSQL","root");
   define("BDPASS_MYSQL","");

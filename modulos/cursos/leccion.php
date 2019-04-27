@@ -273,7 +273,7 @@
         <div class="container mt-3">  
           <?php 
             if ($taller != NULL) {
-              include_once($ruta_raiz . $contenido);
+              include_once($ruta_raiz . "modulos/" .  $contenido);
             }elseif ($contenido != NULL) {
               echo $contenido;
             }else{

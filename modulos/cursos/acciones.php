@@ -71,8 +71,18 @@
 	      $curso .= '<div class="col-12 col-sm-6 col-lg-4 mt-4">
 	                  <div class="card">
 	                    <div class="card-body m-shadow m-shadow-primary">
-	                      <h3 class="card-title text-center mb-3">' . $sql_mc[$i]['mc_nombre'] . '</h3>
-	                      <p class="text-justify">' . $sql_mc[$i]['mc_descripcion'] . '</p>
+                     		<div class="row">
+                      		<div class="col-10">
+                        		<h3 class="card-title text-center mb-3">' . $sql_mc[$i]['mc_nombre'] . '</h3>
+                      		</div>
+                      		<div class="col-2">';
+        if ($sql_mc[$i]['mc_descripcion'] != "") {
+        	$curso .= '<button class="btn btn-info" onclick="mostrarInfo(\''. $sql_mc[$i]['mc_descripcion'] .'\')"><i class="fas fa-info"></i></button>';
+        }
+                        		
+                      		
+      	$curso .= '</div>
+      									</div>
 	                      <div class="d-flex justify-content-between text-muted">
 	                        <span>' . $porcentaje . '%</span>
 	                        <span>' . $sql_mm['cantidad_registros'] . ' Módulo</span>
@@ -90,8 +100,18 @@
 	        $curso .= '<div class="col-12 col-sm-6 col-lg-4 mt-4">
 	                    <div class="card">
 	                      <div class="card-body border border-warning m-shadow m-shadow-warning">
-	                        <h3 class="card-title text-center mb-3">' . $sql_mc[$i]['mc_nombre'] . '</h3>
-	                        <p class="text-justify">' . $sql_mc[$i]['mc_descripcion'] . '</p>
+	                      	<div class="row">
+	                      		<div class="col-10">
+	                        		<h3 class="card-title text-center mb-3">' . $sql_mc[$i]['mc_nombre'] . '</h3>
+	                      		</div>
+                      		<div class="col-2">';
+	        if ($sql_mc[$i]['mc_descripcion'] != "") {
+	        	$curso .= '<button class="btn btn-info" onclick="mostrarInfo(\''. $sql_mc[$i]['mc_descripcion'] .'\')"><i class="fas fa-info"></i></button>';
+	        }
+	                        		
+	                      		
+	      	$curso .= '</div>
+	                      	</div>
 	                        <div class="d-flex justify-content-between text-muted">
 	                          <span>' . $porcentaje . '%</span>
 	                          <span>' . $sql_mm['cantidad_registros'] . ' Módulo</span>
@@ -109,8 +129,18 @@
 	        $curso .= '<div class="col-12 col-sm-6 col-lg-4 mt-4">
 	                    <div class="card">
 	                      <div class="card-body border border-info m-shadow m-shadow-info">
-	                        <h3 class="card-title text-center mb-3">' . $sql_mc[$i]['mc_nombre'] . '</h3>
-	                        <p class="text-justify">' . $sql_mc[$i]['mc_descripcion'] . '</p>
+	                        <div class="row">
+	                      		<div class="col-10">
+	                        		<h3 class="card-title text-center mb-3">' . $sql_mc[$i]['mc_nombre'] . '</h3>
+	                      		</div>
+                      		<div class="col-2">';
+	        if ($sql_mc[$i]['mc_descripcion'] != "") {
+	        	$curso .= '<button class="btn btn-info" onclick="mostrarInfo(\''. $sql_mc[$i]['mc_descripcion'] .'\')"><i class="fas fa-info"></i></button>';
+	        }
+	                        		
+	                      		
+	      	$curso .= '</div>
+	                      	</div>
 	                        <div class="d-flex justify-content-between text-muted">
 	                          <span>' . $porcentaje . '%</span>
 	                          <span>' . $sql_mm['cantidad_registros'] . ' Módulo</span>
@@ -128,8 +158,18 @@
 	        $curso .= '<div class="col-12 col-sm-6 col-lg-4 mt-4">
 	                    <div class="card">
 	                      <div class="card-body border border-success m-shadow m-shadow-success">
-	                        <h3 class="card-title text-center mb-3">' . $sql_mc[$i]['mc_nombre'] . '</h3>
-	                        <p class="text-justify">' . $sql_mc[$i]['mc_descripcion'] . '</p>
+	                        <div class="row">
+	                      		<div class="col-10">
+	                        		<h3 class="card-title text-center mb-3">' . $sql_mc[$i]['mc_nombre'] . '</h3>
+	                      		</div>
+                      		<div class="col-2">';
+	        if ($sql_mc[$i]['mc_descripcion'] != "") {
+	        	$curso .= '<button class="btn btn-info" onclick="mostrarInfo(\''. $sql_mc[$i]['mc_descripcion'] .'\')"><i class="fas fa-info"></i></button>';
+	        }
+	                        		
+	                      		
+	      	$curso .= '</div>
+	                      	</div>
 	                        <div class="d-flex justify-content-between text-muted">
 	                          <span>' . $porcentaje . '%</span>
 	                          <span>' . $sql_mm['cantidad_registros'] . ' Módulo</span>

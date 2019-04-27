@@ -12,16 +12,16 @@
     $max_salida--;
   }
 
-  require_once($ruta_raiz . 'clases/funciones_generales.php');
-  require_once($ruta_raiz . 'clases/Session.php');
+  //require_once($ruta_raiz . 'clases/funciones_generales.php');
+  //require_once($ruta_raiz . 'clases/Session.php');
   require_once($ruta_raiz . 'clases/librerias.php');
 
-  $session = new Session();
+  /*$session = new Session();
 
   if(@$session->exist('usuario')){
     header('location: '. $ruta_raiz . 'central');
     die();
-  }
+  }*/
 
   $lib = new Libreria;
 ?>
