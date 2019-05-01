@@ -94,12 +94,17 @@
   function siguienteUnidad($unidad){
     $db = new Bd();
     $db->conectar();
-    $id = "";
+    $id = 0;
+
     $sql = $db->consulta("SELECT * FROM mandino_lecciones WHERE fk_mu = :fk_mu ORDER BY ml_orden ASC LIMIT 1", array(":fk_mu" => $unidad));
+
+    if($sql['cantidad_registros'] != 0){
+      $id = $sql[0]['ml_id']; 
+    }
 
     $db->desconectar();
     
-    return $sql[0]['ml_id'];
+    return $id;
   }
 
 
@@ -279,6 +284,13 @@
             }else{
               echo '<h2 class="titulo text-hyundai my-2 text-center">No existe contenido relacionado</h2>';
             }
+          ?>
+        </div>
+        <hr>
+        <div class="d-flex justify-content-between">
+          <?php 
+            echo $btnAntHtml;
+            echo $btnSigHtml;
           ?>
         </div>
       </div>

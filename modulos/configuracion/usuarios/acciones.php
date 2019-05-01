@@ -12,7 +12,7 @@
   }
 
   require_once($ruta_raiz . "clases/Conectar.php");
-  require_once($ruta_raiz . "clases/SessionActiva.php");
+  include_once($ruta_raiz . "clases/SessionActiva.php");
   require_once($ruta_raiz . "clases/funciones_generales.php");
   require_once($ruta_raiz . "clases/Permisos.php");
   require_once($ruta_raiz . "clases/Upload.php");

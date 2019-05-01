@@ -101,7 +101,7 @@
         $contenidoTabla .= '<td>' . $sql_mtu[$i]['mtu_preguntas_correctas'] . '/' . $sql_mtu[$i]['mtu_preguntas_totales'] . '</td>';
         //$contenidoTabla .= '<td>' . round($porcentaje) . '%</td>';
         $contenidoTabla .= '<td>' . $interval->format('%H horas %i minutos %s seconds') . '</td>';
-        //$contenidoTabla .= '<td><button class="btn btn-info" onclick="revisionTaller(' . $fila_mtu['mtu_id'] . ')"><i class="fas fa-tasks"></i> Revisión</button></td>';
+        //$contenidoTabla .= '<td><button class="btn btn-info" onclick="revisionTaller(' . $sql_mtu[$i]['mtu_id'] . ')"><i class="fas fa-tasks"></i> Revisión</button></td>';
         $contenidoTabla .= '</tr>';
       }
     }else{
@@ -174,7 +174,7 @@
         if (round($porcentaje) > 70) {
           //Validamos cual es la ultima leccion de la unidad
           if (ultimaLeccion($_POST['unidad']) == $_POST['leccion']) {
-            $siguienteUnidad = siguienteUnidad($_POST['unidad']+1);
+            $siguienteUnidad = siguienteUnidad($_POST['unidad']);
             if (validarSiguienteUnidad($siguienteUnidad) == 1) {
               if (validarLeccion($siguienteUnidad) == 0) {
                 if (actualizarVistoLeccion($usuario['id'], $_POST['leccion']) == 1) {
@@ -187,7 +187,16 @@
                 $resp = "Ok";
               }
             }else{
-              $resp = "No funca 2";
+              if (validarUltimaUnidad() == $_POST['unidad']) {
+                if (actualizarVistoLeccion($usuario['id'], $_POST['leccion']) == 1) {
+                  //agregarVistoLeccion($usuario['id'], $siguienteUnidad);
+                  $resp = "Ok";
+                }else{
+                  $resp = "Algo anda mal en este.";
+                }
+              }else{
+                $resp = "No funca 2";
+              }
             }
           }else{
             $resp = "No funca";
@@ -209,10 +218,22 @@
   function siguienteUnidad($unidad){
     $db = new Bd();
     $db->conectar();
-    $id = "";
-    $sql = $db->consulta("SELECT * FROM mandino_lecciones WHERE fk_mu = :fk_mu ORDER BY ml_orden ASC LIMIT 1", array(":fk_mu" => $unidad));
+    $id = 0;
+
+    $sql1 = $db->consulta("SELECT * FROM mandino_unidades WHERE mu_id = :mu_id", array(":mu_id" => $unidad));
+
+    $sql2 = $db->consulta("SELECT * FROM mandino_unidades WHERE mu_orden = :mu_orden", array(":mu_orden" => $sql1[0]['mu_orden'] + 1));
+
+    if ($sql2['cantidad_registros'] > 0) {
+      $sql = $db->consulta("SELECT * FROM mandino_lecciones WHERE fk_mu = :fk_mu ORDER BY ml_orden ASC LIMIT 1", array(":fk_mu" => $sql2[0]['mu_id']));
+
+      if ($sql['cantidad_registros'] > 0) {
+        $id = $sql[0]['ml_id'];
+      }
+    }
+
     $db->desconectar();
-    return $sql[0]['ml_id'];
+    return $id;
   }
 
   function ultimaLeccion($unidad){
@@ -234,6 +255,8 @@
   }
 
   function validarLeccion($leccion){
+    $session = new Session();
+    $usuario = $session->get('usuario');
     $db = new Bd();
     $db->conectar();
     $sql_select_mlv = $db->consulta("SELECT * FROM mandino_lecciones_visto WHERE fk_usuario = :fk_usuario AND fk_ml = :fk_ml", array(":fk_usuario" => $usuario['id'], ":fk_ml" => $leccion));
@@ -248,7 +271,7 @@
     $taller = validarLeccionTaller($leccion);
 
     $sql_insert_mlv = $db->sentencia("INSERT INTO mandino_lecciones_visto VALUES(NULL, :fk_usuario, :fk_ml, :mlv_fecha_creacion, :mlv_taller_aprobo)", array(":fk_usuario" => $usuario, ":fk_ml" => $leccion, ":mlv_fecha_creacion" => date("Y-m-d H:i:s"), ":mlv_taller_aprobo" => $taller));
-    $bd->desconectar();
+    $db->desconectar();
   }
 
   function actualizarVistoLeccion($usuario, $leccion){
@@ -257,7 +280,7 @@
     $sql_insert_mlv = $db->sentencia("UPDATE mandino_lecciones_visto SET mlv_taller_aprobo = :mlv_taller_aprobo  WHERE fk_usuario = :fk_usuario AND fk_ml = :fk_ml", array(":fk_usuario" => $usuario, ":fk_ml" => $leccion, ":mlv_taller_aprobo" => 2));
     $db->desconectar();
 
-    return $sql_insert_mlv['cantidad_registros'];
+    return 1;
   }
 
   function validarLeccionTaller($leccion){
@@ -277,66 +300,65 @@
     return $taller;
   }
 
+  function validarUltimaUnidad(){
+    $db = new Bd();
+    $db->conectar();
+
+    $datos = $db->consulta("SELECT mu_id FROM mandino_unidades ORDER BY mu_orden DESC LIMIT 1");
+
+    $db->desconectar();
+
+    return $datos[0]['mu_id'];
+  }
+
   function revisionTaller(){
     $contenido = "";
     $id_taller = '';
+    $db = new Bd();
+    $db->conectar();
 
-    $db = Conectar::Conexion();
+    $sql_select_mtu = $db->consulta('SELECT * FROM mandino_taller_usuarios WHERE mtu_id = :mtu_id', array(":mtu_id" => $_POST['id_mtu']));
 
-    $sql_select_mtu = 'SELECT * FROM mandino_taller_usuarios WHERE mtu_id = :mtu_id';
-    $result_select_mtu = $db->prepare($sql_select_mtu);
-    $result_select_mtu->execute(array(":mtu_id" => $_POST['id_mtu']));
-    foreach ($result_select_mtu as $fila_select_mtu) {
-      $id_taller = $fila_select_mtu['fk_mt'];
-    }
+    $id_taller = $sql_select_mtu[0]['fk_mt'];
 
     //Consulta del taller
-    $sql_mt = "SELECT * FROM mandino_taller WHERE mt_id = :mt_id";
-    $result_mt = $db->prepare($sql_mt);
-    $result_mt->execute(array(":mt_id" => $id_taller));
+    $sql_mt = $db->consulta("SELECT * FROM mandino_taller WHERE mt_id = :mt_id", array(":mt_id" => $id_taller));
 
-    foreach ($result_mt as $fila_mt) {
-      $contenido .= '<h2 class="text-hyundai titulo text-center pt-3">' . $fila_mt['mt_titulo'] . '</h2>';
-      if ($fila_mt['mt_descripcion'] != NULL) {
-        $contenido .= '<p class="mt-4">' . $fila_mt['mt_descripcion'] . '</p>';
+    for ($i=0; $i <$sql_mt['cantidad_registros'] ; $i++) { 
+      $contenido .= '<h2 class="text-hyundai titulo text-center pt-3">' . $sql_mt[$i]['mt_titulo'] . '</h2>';
+      if ($sql_mt[$i]['mt_descripcion'] != NULL) {
+        $contenido .= '<p class="mt-4">' . $sql_mt[$i]['mt_descripcion'] . '</p>';
       }
       //Buscamos la preguntas relacionadas con la encuesta
-      $sql_mtp = "SELECT * FROM mandino_taller_preguntas WHERE fk_mt = :id_mt";
-      $result_mtp = $db->prepare($sql_mtp);
-      $result_mtp->execute(array(":id_mt" => $fila_mt['mt_id']));
-      foreach ($result_mtp as $fila_mtp) {
+      $sql_mtp = $db->consulta("SELECT * FROM mandino_taller_preguntas WHERE fk_mt = :id_mt", array(":id_mt" => $sql_mt[$i]['mt_id']));
+
+      for ($j=0; $j <$sql_mtp['cantidad_registros']; $j++) { 
         $contenido .= "<hr>";
-        $contenido .= '<p>' . $fila_mtp['mtp_pregunta'] . '</p>';
+        $contenido .= '<p>' . $sql_mtp[$j]['mtp_pregunta'] . '</p>';
         
         //Pruebas de respuesas
-        $sql_select_mtr = "SELECT * FROM mandino_taller_respuestas WHERE fk_mtu = :fk_mtu AND fk_mtp = :fk_mtp";
-        $result_select_mtr = $db->prepare($sql_select_mtr);
-        $result_select_mtr->execute(array(":fk_mtu" => $_POST['id_mtu'],
-                                          ":fk_mtp" => $fila_mtp['mtp_id'] 
-                                          ));
-        foreach ($result_select_mtr as $fila_select_mtr) {
+        $sql_select_mtr = $db->consulta("SELECT * FROM mandino_taller_respuestas WHERE fk_mtu = :fk_mtu AND fk_mtp = :fk_mtp", array(":fk_mtu" => $_POST['id_mtu'], ":fk_mtp" => $sql_mtp[$j]['mtp_id'] ));
+
+        for ($h=0; $h <$sql_select_mtr['cantidad_registros'] ; $h++) { 
           //$contenido .= '<p>' . $fila_select_mtr['mtr_respuesta'] . '</p>';
           //Traemos la respuesta por pregunta
-          $sql_mtpo = "SELECT * FROM mandino_taller_preguntas_opciones  WHERE fk_mtp = :id_mtp";
-          $result_mtpo = $db->prepare($sql_mtpo);
-          $result_mtpo->execute(array(":id_mtp" => $fila_mtp['mtp_id']));
+          $sql_mtpo = $db->consulta("SELECT * FROM mandino_taller_preguntas_opciones  WHERE fk_mtp = :id_mtp", array(":id_mtp" => $sql_mtp[$j]['mtp_id']));
           $contenido .= "<ul>";
-          foreach ($result_mtpo as $fila_mtpo) {
+          for ($a=0; $a < $sql_mtpo['cantidad_registros'] ; $a++) { 
             // Pregunta tipo radio
-            if ($fila_select_mtr['mtr_respuesta'] == $fila_mtpo['mtpo_id'] && $fila_mtpo['mtpo_correcta'] == 1) {
+            if ($sql_select_mtr[$h]['mtr_respuesta'] == $sql_mtpo[$a]['mtpo_id'] && $sql_mtpo[$a]['mtpo_correcta'] == 1) {
               # code...
-              $contenido .= '<li class="alert-success">' . $fila_mtpo['mtpo_descripcion'] . '</li>'; 
-            }else if($fila_select_mtr['mtr_respuesta'] == $fila_mtpo['mtpo_id'] && $fila_mtpo['mtpo_correcta'] == 0){
-              $contenido .= '<li class="alert-danger">' . $fila_mtpo['mtpo_descripcion'] . '</li>'; 
-            }else if($fila_mtpo['mtpo_correcta'] == 1){
-              $contenido .= '<li class="alert-warning">' . $fila_mtpo['mtpo_descripcion'] . '</li>'; 
+              $contenido .= '<li class="alert-success">' . $sql_mtpo[$a]['mtpo_descripcion'] . '</li>'; 
+            }else if($sql_select_mtr[$h]['mtr_respuesta'] == $sql_mtpo[$a]['mtpo_id'] && $sql_mtpo[$a]['mtpo_correcta'] == 0){
+              $contenido .= '<li class="alert-danger">' . $sql_mtpo[$a]['mtpo_descripcion'] . '</li>'; 
+            }else if($sql_mtpo[$a]['mtpo_correcta'] == 1){
+              $contenido .= '<li class="alert-warning">' . $sql_mtpo[$a]['mtpo_descripcion'] . '</li>'; 
             }else{
-              $contenido .= '<li>' . $fila_mtpo['mtpo_descripcion'] . '</li>'; 
+              $contenido .= '<li>' . $sql_mtpo[$a]['mtpo_descripcion'] . '</li>'; 
             }
           }
           $contenido .= "</ul>";
         }
-
       }
     }
     return $contenido;

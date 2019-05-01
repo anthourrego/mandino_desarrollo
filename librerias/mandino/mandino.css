@@ -37,6 +37,14 @@ a.text-mandino:hover, a.text-primary:focus {
   background-color: #0033a0 !important;
 }
 
+.sub-titulo{
+  color: #563d7c !important;
+}
+
+.sub-titulo2{
+  color: #ccc0d9 !important;
+}
+
 a.bg-mandino:hover, a.bg-mandino:focus,
 button.bg-mandino:hover,
 button.bg-mandino:focus {

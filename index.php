@@ -12,16 +12,16 @@
     $max_salida--;
   }
 
-  //require_once($ruta_raiz . 'clases/funciones_generales.php');
-  //require_once($ruta_raiz . 'clases/Session.php');
+  require_once($ruta_raiz . 'clases/funciones_generales.php');
+  require_once($ruta_raiz . 'clases/Session.php');
   require_once($ruta_raiz . 'clases/librerias.php');
 
-  /*$session = new Session();
+  $session = new Session();
 
   if(@$session->exist('usuario')){
     header('location: '. $ruta_raiz . 'central');
     die();
-  }*/
+  }
 
   $lib = new Libreria;
 ?>
@@ -87,7 +87,7 @@
 </head>
 <body class="container">
   <nav class="navbar navbar-light bg-trasparent">
-    <a class="navbar-brand" href="<?= rutaBase ?>">
+    <a class="navbar-brand" href="<? echo(RUTA_RAIZ); ?>">
       <img src="img/logo1.png" alt="">
     </a>
   </nav>
@@ -160,7 +160,7 @@
       if($("#formLogin").valid()){
         $.ajax({
           type: "POST",
-          url: "ajax/login",
+          url: "<?php echo($ruta_raiz); ?>ajax/login.php",
           cache: false,
           contentType: false,
           processData: false,

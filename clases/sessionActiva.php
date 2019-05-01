@@ -13,7 +13,7 @@
     $max_salida--;
   }
 
-  require_once($ruta_raiz . "clases/Session.php");
+  include_once($ruta_raiz . "clases/Session.php");
   
   $session = new Session();
 
