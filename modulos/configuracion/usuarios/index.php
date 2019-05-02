@@ -88,6 +88,7 @@
         </div>
         <form id="formCrearUsuario" autocomplete="off" enctype="multipart/form-data">
           <input type="hidden" name="accion" value="crearUsuario">
+          <input type="hidden" name="usuarioCreador" value="<?php echo($usuario['id']); ?>">
           <div class="modal-body">
             <div class="row">
               <div class="col-6 text-center">
@@ -132,9 +133,11 @@
                 <label>Teléfono</label>
                 <input class="form-control" type="tel" name="telefono" onkeypress="return soloNumeros(event);" id="telefono">
               </div>
-              <div>
-                
+              <div class="col-12 text-center">
+                <hr>
+                <h5>Cursos</h5>
               </div>
+              <div class="col-12" id="listaCursos"></div>
             </div>
           </div>
           <div class="modal-footer justify-content-center">
@@ -231,6 +234,23 @@
       $(this).addClass('active');
       idBoton = $(this).val();
       cargarUsuarios(idBoton);
+    });
+
+
+    $.ajax({
+      url: '<?php echo($ruta_raiz) ?>modulos/configuracion/cursos/acciones',
+      type: 'POST',
+      dataType: 'json',
+      data: {accion: 'ListaCursos1'},
+      success: function(data){
+        for (var i = 0; i < data.cantidad_registros; i++) {
+          //console.log(data[i]);
+          $("#listaCursos").append('<div class="custom-control custom-checkbox custom-control-inline"><input type="checkbox" name="cursos[]" class="custom-control-input" value="' + data[i].mc_id + '" id="cursos' + data[i].mc_id + '"><label class="custom-control-label" for="cursos' + data[i].mc_id + '">' + data[i].mc_nombre + '</label></div>');
+        }
+      },
+      error: function(){
+        alertify.error("No han cargado los cursos");
+      }
     });
 
     $("#formCrearUsuario").validate({

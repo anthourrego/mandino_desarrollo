@@ -169,8 +169,6 @@
   }
 
   function crearUsuario(){
-    
-
     $db = new Bd();
     $db->conectar();
     $respuesta = "";
@@ -198,6 +196,16 @@
               ":u_cambio_pass" => date('Y-m-d'), 
               ":u_activo" => 1
               ));
+
+      if(isset($_POST['cursos'])){
+        $id_usu = $db->consulta("SELECT * FROM mandino_usuarios WHERE u_nro_documento = :u_nro_documento", array(":u_nro_documento" => $_POST['nro_doc']) );
+
+        foreach ($_POST['cursos'] as $cursos) {
+          $db->sentencia("INSERT INTO mandino_curso_usuario(fk_mc, id_usuario, fecha_creacion, id_creador) VALUES(:fk_mc, :id_usuario, :fecha_creacion, :id_creador)", array(":fk_mc" => $cursos, ":id_usuario" => $id_usu[0]['u_id'], ":fecha_creacion" => date('Y-m-d H:i:s'), ":id_creador" => $_POST['usuarioCreador']));
+        }
+
+      }
+
 
       if(@$_FILES['foto']['size'][0] > 0){ //GUARDAMOS IMAGENES
         $config_upload=array(

@@ -34,6 +34,18 @@
   	return $resp;
   }
 
+  function ListaCursos1(){
+    $db = new Bd();
+    $cursos = "";
+    $db->conectar();
+
+    $cursos = $db->consulta("SELECT * FROM mandino_curso");
+
+    $db->desconectar();
+
+    return json_encode($cursos);
+  }
+
   function listaModulos(){
     $db = new Bd();
     $modulos = "";
