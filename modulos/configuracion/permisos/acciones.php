@@ -11,7 +11,6 @@
     $max_salida--;
   }
 
-  require_once($ruta_raiz . "clases/SessionActiva.php");
   require_once($ruta_raiz . "clases/Conectar.php");
   require_once($ruta_raiz . "clases/funciones_generales.php");
   require_once($ruta_raiz . "clases/Upload.php");
