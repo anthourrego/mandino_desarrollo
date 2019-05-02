@@ -4,7 +4,7 @@
 		private $ambiente;
 		
 		public function __construct(){
-			$this->ambiente="mandino";
+			$this->ambiente="mandino_desarrollo";
 		}	
 		
 		public function set($nombre,$valor){
