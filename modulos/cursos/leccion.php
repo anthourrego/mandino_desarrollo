@@ -125,14 +125,14 @@
     $sql_moduloActual = $db->consulta("SELECT * FROM mandino_unidades WHERE mu_id = :mu_id", array(":mu_id" => $unidad));
 
     $db->desconectar();
-    return $sql_moduloActual[0]['fk_mm'];
+    return $sql_moduloActual[0]['fk_mc'];
   }
 
   function leccionesVistas($usuario, $modulo){
     $db = new Bd();
     $db->conectar();
     
-    $sql_leccionesVistas = $db->consulta("SELECT * FROM mandino_unidades INNER JOIN mandino_lecciones ON fk_mu = mu_id INNER JOIN mandino_lecciones_visto AS mlv ON mlv.fk_ml = ml_id WHERE fk_mm = :fk_mm AND mlv.fk_usuario = :fk_usuario", array("fk_mm" => $modulo,"fk_usuario" => $usuario));
+    $sql_leccionesVistas = $db->consulta("SELECT * FROM mandino_unidades INNER JOIN mandino_lecciones ON fk_mu = mu_id INNER JOIN mandino_lecciones_visto AS mlv ON mlv.fk_ml = ml_id WHERE fk_mc = :fk_mc AND mlv.fk_usuario = :fk_usuario", array("fk_mc" => $modulo,"fk_usuario" => $usuario));
 
     $db->desconectar();
     return $sql_leccionesVistas['cantidad_registros'];
@@ -153,6 +153,77 @@
       return $sql[0]['ml_id'];
     }
   }
+
+  function botonesUnidadAnterior($curso, $unidad){
+    $db = new Bd();
+    $db->conectar();
+    $btn = "";
+
+
+    $sql = $db->consulta("SELECT * FROM mandino_unidades WHERE fk_mc = :fk_mc AND mu_id = :mu_id", array(":fk_mc" => $curso, ":mu_id" =>$unidad));
+
+    if ($sql['cantidad_registros'] == 1) {
+      $sql1 = $db->consulta("SELECT * FROM mandino_unidades WHERE fk_mc = :fk_mc AND mu_orden = :mu_orden", array(":fk_mc" => $curso, ":mu_orden" => $sql[0]['mu_orden'] - 1));
+      if($sql1['cantidad_registros'] == 1){
+        $sql2 = $db->consulta("SELECT * FROM mandino_lecciones WHERE fk_mu = :fk_mu ORDER BY ml_orden DESC LIMIT 1", array(":fk_mu" => $sql1[0]['mu_id']));
+
+        $btn = '<a class="btn btn-success" href="leccion?uni=' . $sql1[0]['mu_id'] . '&less=' . $sql2[0]['ml_id'] . '&curso=' . $curso . '"><i class="fas fa-angle-left"></i> Unidad Anterior</a>';
+      }else{
+        $btn = '<button type="button" class="btn btn-success" disabled><i class="fas fa-angle-left"></i> Anterior</button>';
+      }
+    }else{
+      $btn = '<button type="button" class="btn btn-success" disabled><i class="fas fa-angle-left"></i> Anterior</button>';
+    }
+
+
+    $db->desconectar();
+    return $btn;
+  }
+
+  function botonesUnidadSiguiente($curso, $unidad, $leccionActual){
+    $db = new Bd();
+    $db->conectar();
+    $btn = "";
+
+    if(validarLeccionTallerAprobado($leccionActual) == 0){
+      $sql = $db->consulta("SELECT * FROM mandino_unidades WHERE fk_mc = :fk_mc AND mu_id = :mu_id", array(":fk_mc" => $curso, ":mu_id" =>$unidad));
+
+      if ($sql['cantidad_registros'] == 1) {
+        $sql1 = $db->consulta("SELECT * FROM mandino_unidades WHERE fk_mc = :fk_mc AND mu_orden = :mu_orden", array(":fk_mc" => $curso, ":mu_orden" => $sql[0]['mu_orden'] + 1));
+        if($sql1['cantidad_registros'] == 1){
+          $sql2 = $db->consulta("SELECT * FROM mandino_lecciones WHERE fk_mu = :fk_mu ORDER BY ml_orden ASC LIMIT 1", array(":fk_mu" => $sql1[0]['mu_id']));
+
+          $btn = '<a class="btn btn-success" href="leccion?uni=' . $sql1[0]['mu_id'] . '&less=' . $sql2[0]['ml_id'] . '&curso=' . $curso . '">Unidad Siguiente <i class="fas fa-angle-right"></i></a>';
+        }else{
+          $btn = '<button type="button" class="btn btn-success" disabled>Siguiente <i class="fas fa-angle-right"></i></button>';
+        }
+      }else{
+        $btn = '<button type="button" class="btn btn-success" disabled>Siguiente <i class="fas fa-angle-right"></i></button>';
+      }
+    }else{
+      $btn = '<button type="button" class="btn btn-success" disabled>Unidad Siguiente <i class="fas fa-angle-right"></i></button>';
+    }
+
+    $db->desconectar();
+    return $btn;
+  }
+
+  function validarLeccionTallerAprobado($leccion){
+    $db = new Bd();
+    $db->conectar();
+    $resp = 1;
+    $sql_select_ml = $db->consulta("SELECT mlv_taller_aprobo FROM mandino_lecciones_visto WHERE fk_ml = :fk_ml", array(":fk_ml" => $leccion));
+
+    if ($sql_select_ml[0]['mlv_taller_aprobo'] == 0) {
+      $resp = 0;
+    }else if ($sql_select_ml[0]['mlv_taller_aprobo'] == 2) {
+      $resp = 0;
+    }
+
+    $db->desconectar();
+    return $resp;
+  }
+
   //Traemos los datos de la base de datos segun la unidad 
   $db = new Bd();
   $db->conectar();
@@ -230,14 +301,19 @@
   if (validar(@$btnAnt, $_GET['uni']) == 1) {
     $btnAntHtml = '<a class="btn btn-success" href="leccion?uni=' . $_GET['uni'] . '&less=' . $btnAnt . '&curso=' . $_GET['curso'] . '"><i class="fas fa-angle-left"></i> Anterior</a>';
   }else{
-    $btnAntHtml = '<button type="button" class="btn btn-success" disabled><i class="fas fa-angle-left"></i> Anterior</button>';
+    $btnAntHtml = botonesUnidadAnterior($_GET['curso'], $_GET['uni']);
   }
 
   if (validar(@$btnSig, $_GET['uni']) == 1) {
     $btnSigHtml = '<a class="btn btn-success" href="leccion?uni=' . $_GET['uni'] . '&less=' . $btnSig . '&curso=' . $_GET['curso'] . '">Siguiente <i class="fas fa-angle-right"></i></a>';
   }else{
-    $btnSigHtml = '<button type="button" class="btn btn-success" disabled>Siguiente <i class="fas fa-angle-right"></i></button>';
+    $btnSigHtml = botonesUnidadSiguiente($_GET['curso'], $_GET['uni'], $_GET['less']);
+    //$btnSigHtml = '<button type="button" class="btn btn-success" disabled>Siguiente <i class="fas fa-angle-right"></i></button>';
   } 
+
+  $nombreUnidades = $db->consulta("SELECT * FROM mandino_unidades WHERE mu_id = :mu_id", array(":mu_id" => $_GET['uni']));
+
+  $nombreUnidades = $nombreUnidades[0]['mu_nombre'];
 
   $db->desconectar();
 
@@ -271,6 +347,9 @@
         <div class="d-flex justify-content-between">
           <?php 
             echo $btnAntHtml;
+          ?>
+          <h4 class="titulo text-hyundai"><?php echo($nombreUnidades);?></h4>
+          <?php
             echo $btnSigHtml;
           ?>
         </div>

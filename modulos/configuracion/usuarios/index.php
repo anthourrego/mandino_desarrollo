@@ -205,18 +205,27 @@
       </div>
     </div>
   </div>
-
-  <!-- Modal Permisos -->
-  <div class="modal fade" id="modal-permisos" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
+  
+  <!-- Modal Editar Usuario -->
+  <div class="modal fade" id="modal-cursoUsuarios" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title"><i class='fas fa-user-shield'></i> Permisos</h5>
+          <h5 class="modal-title" id="crearUsuarioLabel"><i class="fas fa-book"></i> Cursos - Usuarios</h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
-        <div class="modal-body mb-4" id="contenido-permiso"></div>
+        <form id="formCursosUsuarios" autocomplete="off" enctype="multipart/form-data">
+          <input type="hidden" name="accion" value="editarUsuario">
+          <input type="hidden" name="cursoUsuId" id="cursoUsuId">
+          <div class="modal-body" id="contenido-cursos-usuarios">
+            
+          </div>
+          <div class="modal-footer d-flex justify-content-center">
+            <button type="submit" class="btn btn-primary"><i class="far fa-save"></i> Actualizar</button>
+          </div>
+        </form>
       </div>
     </div>
   </div>
@@ -494,6 +503,23 @@
     top.$("#cargando").modal("show");
     top.$("#contenido-modal").attr("data", "<?php echo(RUTA_RAIZ); ?>/modulos/configuracion/permisos/permisos_usuario?idUsu="+id);
     top.$("#modal-link").modal("show");
+  }
+
+  function cursos(id){
+    $.ajax({
+      url: 'acciones',
+      type: 'POST',
+      dataType: 'html',
+      data: {accion: 'listaCursoUsuarios', idUsu: id},
+      success: function(data){
+        $("#contenido-cursos-usuarios").html(data);
+      },
+      error: function(){
+        alertify.error("No se ha podido cargar. los cursos.");  
+      }
+    });
+
+    $("#modal-cursoUsuarios").modal("show");
   }
     
 </script>

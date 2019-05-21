@@ -118,6 +118,10 @@
           $respuesta .= "<button class='btn btn-info' onClick='permisos(". $usuarios[$i]['u_id'] .")'><i class='fas fa-user-shield'></i></button>";
         }
 
+        if ($permisos->validarPermiso($usuario['id'], 'usuarios_cursos')) {
+          $respuesta .= "<button class='btn btn-secondary' onClick='cursos(". $usuarios[$i]['u_id'] .")'><i class='fas fa-book'></i></button>";
+        }
+
         if ($permisos->validarPermiso($usuario['id'], "usuarios_habilitar_inhabilitar")) {
           if($usuarios[$i]['u_activo'] == 1){
             $respuesta .= "<button class='btn btn-danger' onClick='inHabilitarUsuario(" . $usuarios[$i]['u_id'] . ", 0)'><i class='fas fa-user-minus'></i></button>";
@@ -253,5 +257,36 @@
     $db->desconectar();
     
     return "Ok";
+  }
+
+  function listaCursoUsuarios(){
+    $resp = "";
+    $db = new Bd();
+    $db->conectar();
+
+    $cursos = $db->consulta("SELECT * FROM mandino_curso");
+
+    for ($i=0; $i < $cursos['cantidad_registros']; $i++) { 
+      $cursos_usuarios = $db->consulta("SELECT * FROM mandino_curso_usuario WHERE fk_mc = :fk_mc AND id_usuario = :id_usuario", array(":fk_mc" => $cursos[$i]['mc_id'], ":id_usuario" => $_POST['idUsu']));
+
+      if ($cursos_usuarios['cantidad_registros'] == 1) {
+        $resp .= '<div class="custom-control custom-checkbox custom-control-inline">
+                    <input type="checkbox" value="' . $cursos[$i]['mc_id'] . '" class="custom-control-input" id="cursos' . $cursos[$i]['mc_id'] . '" checked>
+                    <label class="custom-control-label" for="cursos' . $cursos[$i]['mc_id'] . '">' . $cursos[$i]['mc_nombre'] . '</label>
+                  </div>';
+      }else{
+        $resp .= '<div class="custom-control custom-checkbox custom-control-inline">
+                    <input type="checkbox" value="' . $cursos[$i]['mc_id'] . '" class="custom-control-input" id="cursos' . $cursos[$i]['mc_id'] . '">
+                    <label class="custom-control-label" for="cursos' . $cursos[$i]['mc_id'] . '">' . $cursos[$i]['mc_nombre'] . '</label>
+                  </div>';
+      }
+
+    }
+
+    $cursos_usuarios = "";
+
+    $db->desconectar();
+
+    return $resp;
   }
 ?>

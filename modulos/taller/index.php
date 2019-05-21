@@ -18,7 +18,6 @@
   $session = new Session();
 
   $usuario = $session->get("usuario");
-
 ?>
 
 <div id="tabla-inicio">
@@ -108,9 +107,10 @@
         data: new FormData(this),
         success: function(data){
           if (data == "Ok") {
-            listaTabla();
+            location.reload();
+            /*listaTabla();
             $("#taller").hide();
-            $("#tabla-inicio").show();
+            $("#tabla-inicio").show();*/
           }else{
             alertify.error(data);
           }

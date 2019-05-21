@@ -14,10 +14,10 @@
   define("BDPASS_MYSQL","");
   define("BDTYPE_MYSQL",1);
 
-  /*define("BDNAME_MYSQL","ceg_pruebas");
+  /*define("BDNAME_MYSQL","mandino2");
   define("BDSERVER_MYSQL","www.consumerelectronicsgroup.com");
-  define("BDUSER_MYSQL","ceg_admin");
-  define("BDPASS_MYSQL","at7418*");
+  define("BDUSER_MYSQL","ceg");
+  define("BDPASS_MYSQL","515t3ma5");
   define("BDTYPE_MYSQL",1);*/
 
   /*/
