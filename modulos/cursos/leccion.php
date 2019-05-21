@@ -180,12 +180,12 @@
     return $btn;
   }
 
-  function botonesUnidadSiguiente($curso, $unidad, $leccionActual){
+  function botonesUnidadSiguiente($curso, $unidad, $leccionActual, $usuario){
     $db = new Bd();
     $db->conectar();
     $btn = "";
 
-    if(validarLeccionTallerAprobado($leccionActual) == 0){
+    if(validarLeccionTallerAprobado($leccionActual, $usuario) == 0){
       $sql = $db->consulta("SELECT * FROM mandino_unidades WHERE fk_mc = :fk_mc AND mu_id = :mu_id", array(":fk_mc" => $curso, ":mu_id" =>$unidad));
 
       if ($sql['cantidad_registros'] == 1) {
@@ -208,12 +208,11 @@
     return $btn;
   }
 
-  function validarLeccionTallerAprobado($leccion){
+  function validarLeccionTallerAprobado($leccion, $usuario){
     $db = new Bd();
     $db->conectar();
     $resp = 1;
-    $sql_select_ml = $db->consulta("SELECT mlv_taller_aprobo FROM mandino_lecciones_visto WHERE fk_ml = :fk_ml", array(":fk_ml" => $leccion));
-
+    $sql_select_ml = $db->consulta("SELECT mlv_taller_aprobo FROM mandino_lecciones_visto WHERE fk_ml = :fk_ml AND fk_usuario = :fk_usuario", array(":fk_ml" => $leccion, ":fk_usuario" => $usuario));
     if ($sql_select_ml[0]['mlv_taller_aprobo'] == 0) {
       $resp = 0;
     }else if ($sql_select_ml[0]['mlv_taller_aprobo'] == 2) {
@@ -307,7 +306,7 @@
   if (validar(@$btnSig, $_GET['uni']) == 1) {
     $btnSigHtml = '<a class="btn btn-success" href="leccion?uni=' . $_GET['uni'] . '&less=' . $btnSig . '&curso=' . $_GET['curso'] . '">Siguiente <i class="fas fa-angle-right"></i></a>';
   }else{
-    $btnSigHtml = botonesUnidadSiguiente($_GET['curso'], $_GET['uni'], $_GET['less']);
+    $btnSigHtml = botonesUnidadSiguiente($_GET['curso'], $_GET['uni'], $_GET['less'], $usuario['id']);
     //$btnSigHtml = '<button type="button" class="btn btn-success" disabled>Siguiente <i class="fas fa-angle-right"></i></button>';
   } 
 
