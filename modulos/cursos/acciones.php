@@ -59,7 +59,7 @@
   	$db = new Bd();
   	$db->conectar();
 
-  	$sql_mc = $db->consulta("SELECT * FROM mandino_curso_usuario INNER JOIN mandino_curso ON fk_mc = mc_id WHERE id_usuario = :id_usu", array(":id_usu" => $_POST['id_usu']));
+  	$sql_mc = $db->consulta("SELECT * FROM mandino_curso_usuario INNER JOIN mandino_curso ON fk_mc = mc_id WHERE id_usuario = :id_usu AND mcu_activo = 1", array(":id_usu" => $_POST['id_usu']));
 		
   	for ($i=0; $i < $sql_mc['cantidad_registros'] ; $i++) { 
   		$sql_mu = $db->consulta("SELECT * FROM mandino_unidades WHERE fk_mc = :id", array(":id"=>$sql_mc[$i]['mc_id']));

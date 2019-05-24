@@ -96,7 +96,7 @@
 	var idleTime = 0; 
 	$(function(){
 		//Tiempo en que valida la session
-    window.idleInterval = setInterval(validarSession, 10000); // 10 minute 
+    window.idleInterval = setInterval(validarSession, 600000); // 10 minute 
 
     if (localStorage.mandinourl == null) {
       $("#contenido").attr("data", "modulos/cursos/cursos");
@@ -131,4 +131,5 @@
     window.location.href='<?php echo RUTA_RAIZ ?>clases/sessionCerrar';
   }
 </script>
+
 </html>

@@ -83,7 +83,7 @@
 
     $taller = validarLeccionTaller($leccion);
 
-    $sql_insert_mlv = $db->sentencia("INSERT INTO mandino_lecciones_visto VALUES(NULL, :fk_usuario, :fk_ml, :mlv_fecha_creacion, :mlv_taller_aprobo)" , array(":fk_usuario" => $usuario,
+    $sql_insert_mlv = $db->sentencia("INSERT INTO mandino_lecciones_visto VALUES(NULL, :fk_usuario, :fk_ml, :mlv_fecha_creacion, :mlv_taller_aprobo, 0)" , array(":fk_usuario" => $usuario,
                                       ":fk_ml" => $leccion,
                                       ":mlv_fecha_creacion" => date("Y-m-d H:i:s"),
                                       ":mlv_taller_aprobo" => $taller
@@ -250,7 +250,7 @@
   }
 
   //Se agrega la leccion actual si no se a visto anteriormente
-  if (validarLeccion($_GET['less'], $usuario['id']) == 0 && isset($_GET['less']) && $_GET['less'] != "") {
+  if (validarLeccion(@$_GET['less'], $usuario['id']) == 0 && isset($_GET['less']) && $_GET['less'] != "") {
     agregarVistoLeccion($usuario['id'], $_GET['less']);
   }
 

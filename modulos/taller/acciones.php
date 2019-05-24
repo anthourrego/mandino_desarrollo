@@ -108,8 +108,10 @@
       $contenidoTabla .= '<tr><td colspan="4">No se han encontrado registros</td></tr>';
     }
 
+    //Validamos si tiene oportunidades adicionales
+    $intentos_adicionles = $db->consulta("SELECT mlv_taller_intento_adicional FROM mandino_lecciones_visto WHERE fk_usuario = :fk_usuario AND fk_ml = :fk_ml", array(":fk_usuario" => $_REQUEST['usu'], ":fk_ml" => $_REQUEST['less']));
 
-    if ($sql_mtu['cantidad_registros'] >= 3) {
+    if ($sql_mtu['cantidad_registros'] >= ($intentos_adicionles[0]['mlv_taller_intento_adicional'] + 3)) {
       $contenidoTabla .= '<script type="text/javascript">
                             $(function(){
                               $("#btn-realizar-examen").hide();
@@ -270,7 +272,7 @@
     $db->conectar();
     $taller = validarLeccionTaller($leccion);
 
-    $sql_insert_mlv = $db->sentencia("INSERT INTO mandino_lecciones_visto VALUES(NULL, :fk_usuario, :fk_ml, :mlv_fecha_creacion, :mlv_taller_aprobo)", array(":fk_usuario" => $usuario, ":fk_ml" => $leccion, ":mlv_fecha_creacion" => date("Y-m-d H:i:s"), ":mlv_taller_aprobo" => $taller));
+    $sql_insert_mlv = $db->sentencia("INSERT INTO mandino_lecciones_visto VALUES(NULL, :fk_usuario, :fk_ml, :mlv_fecha_creacion, :mlv_taller_aprobo, 0)", array(":fk_usuario" => $usuario, ":fk_ml" => $leccion, ":mlv_fecha_creacion" => date("Y-m-d H:i:s"), ":mlv_taller_aprobo" => $taller));
     $db->desconectar();
   }
 

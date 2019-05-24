@@ -108,7 +108,8 @@
                         <td class='align-middle'>" . $usuarios[$i]['u_usuario'] . "</td>
                         <td class='align-middle'>" . $usuarios[$i]['u_nombre1'] . " " . $usuarios[$i]['u_nombre2'] . " " . $usuarios[$i]['u_apellido1'] . " " . $usuarios[$i]['u_apellido2'] . "</td>
                         <td class='align-middle'>" . $usuarios[$i]['u_telefono'] . "</td>
-                        <td class='d-flex justify-content-around'>";
+                        <td class='d-flex justify-content-around'>
+                        <!--<button class='btn btn-info' onClick='estadoUsuario(". $usuarios[$i]['u_id'] .")'><i class='far fa-calendar-check'></i></button>--> ";
 
         if ($permisos->validarPermiso($usuario['id'], "usuarios_editar")) {
           $respuesta .= "<button class='btn btn-success' onClick='editarUsuario(". $usuarios[$i]['u_id'] .")'><i class='fas fa-user-edit'></i></button>";
@@ -242,12 +243,6 @@
     $db->desconectar();
   }
 
-  if(@$_REQUEST['accion']){
-    if(function_exists($_REQUEST['accion'])){
-      echo($_REQUEST['accion']());
-    }
-  }
-
   function editarUsuario(){
     $db = new Bd();
     $db->conectar();
@@ -267,17 +262,17 @@
     $cursos = $db->consulta("SELECT * FROM mandino_curso");
 
     for ($i=0; $i < $cursos['cantidad_registros']; $i++) { 
-      $cursos_usuarios = $db->consulta("SELECT * FROM mandino_curso_usuario WHERE fk_mc = :fk_mc AND id_usuario = :id_usuario", array(":fk_mc" => $cursos[$i]['mc_id'], ":id_usuario" => $_POST['idUsu']));
+      $cursos_usuarios = $db->consulta("SELECT * FROM mandino_curso_usuario WHERE fk_mc = :fk_mc AND id_usuario = :id_usuario AND mcu_activo = 1", array(":fk_mc" => $cursos[$i]['mc_id'], ":id_usuario" => $_POST['idUsu']));
 
       if ($cursos_usuarios['cantidad_registros'] == 1) {
         $resp .= '<div class="custom-control custom-checkbox custom-control-inline">
-                    <input type="checkbox" value="' . $cursos[$i]['mc_id'] . '" class="custom-control-input" id="cursos' . $cursos[$i]['mc_id'] . '" checked>
-                    <label class="custom-control-label" for="cursos' . $cursos[$i]['mc_id'] . '">' . $cursos[$i]['mc_nombre'] . '</label>
+                    <input type="checkbox" value="' . $cursos[$i]['mc_id'] . '" class="custom-control-input" name="cursoEditar[]" id="curso' . $cursos[$i]['mc_id'] . '" checked>
+                    <label class="custom-control-label" for="curso' . $cursos[$i]['mc_id'] . '">' . $cursos[$i]['mc_nombre'] . '</label>
                   </div>';
       }else{
         $resp .= '<div class="custom-control custom-checkbox custom-control-inline">
-                    <input type="checkbox" value="' . $cursos[$i]['mc_id'] . '" class="custom-control-input" id="cursos' . $cursos[$i]['mc_id'] . '">
-                    <label class="custom-control-label" for="cursos' . $cursos[$i]['mc_id'] . '">' . $cursos[$i]['mc_nombre'] . '</label>
+                    <input type="checkbox" value="' . $cursos[$i]['mc_id'] . '" class="custom-control-input" name="cursoEditar[]" id="curso' . $cursos[$i]['mc_id'] . '">
+                    <label class="custom-control-label" for="curso' . $cursos[$i]['mc_id'] . '">' . $cursos[$i]['mc_nombre'] . '</label>
                   </div>';
       }
 
@@ -288,5 +283,36 @@
     $db->desconectar();
 
     return $resp;
+  }
+
+  function editarCursosUsuario(){
+    $resp = "";
+    $db = new Bd();
+    $db->conectar();
+
+    //Se dehabilitan todos los cursos del usuario
+    $db->sentencia("UPDATE mandino_curso_usuario SET mcu_activo = 0 WHERE id_usuario = :id_usuario", array(":id_usuario" => $_REQUEST['cursoUsuId']));
+    
+    //Validamos si seleccionaron los cheackbox
+    if (@$_REQUEST['cursoEditar']) {
+      foreach ($_REQUEST['cursoEditar'] as $curso) {
+        $validar = $db->consulta("SELECT * FROM mandino_curso_usuario WHERE id_usuario = :id_usuario AND fk_mc = :fk_mc", array(":id_usuario" => $_REQUEST['cursoUsuId'], ":fk_mc" => $curso));
+        if ($validar['cantidad_registros'] == 1) {
+          $db->sentencia("UPDATE mandino_curso_usuario SET mcu_activo = 1 WHERE id_usuario  = :id_usuario AND fk_mc = :fk_mc", array(":id_usuario" => $_REQUEST['cursoUsuId'], ":fk_mc" => $curso));
+        }else{
+          $db->sentencia("INSERT INTO mandino_curso_usuario(fk_mc, id_usuario, fecha_creacion, id_creador, mcu_activo) VALUES(:fk_mc, :id_usuario, :fecha_creacion, :id_creador, :mcu_activo)", array(":fk_mc" => $curso, ":id_usuario" => $_REQUEST['cursoUsuId'], ":fecha_creacion" => date('Y-m-d H:i:s'), ":id_creador" => $_REQUEST['cursoUsuIdCreador'], ":mcu_activo" =>1));
+        }
+      }
+    }
+    
+
+    $db->desconectar();
+    return $resp;
+  }
+
+  if(@$_REQUEST['accion']){
+    if(function_exists($_REQUEST['accion'])){
+      echo($_REQUEST['accion']());
+    }
   }
 ?>

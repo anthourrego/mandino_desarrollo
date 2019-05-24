@@ -149,7 +149,7 @@
     $.ajax({
       type: "POST",
       url: "<?php echo($ruta_raiz) ?>modulos/taller/acciones",
-      data: {accion: "registroTalleresIntentos", taller: <?php echo $taller; ?>, usu: <?php echo($usuario['id']); ?>},
+      data: {accion: "registroTalleresIntentos", taller: <?php echo $taller; ?>, usu: <?php echo($usuario['id']); ?>, less: <?php echo($_GET['less']); ?>},
       success: function(data){
         $("#contenidoTabla").html(data);
       },

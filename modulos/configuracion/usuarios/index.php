@@ -217,8 +217,9 @@
           </button>
         </div>
         <form id="formCursosUsuarios" autocomplete="off" enctype="multipart/form-data">
-          <input type="hidden" name="accion" value="editarUsuario">
+          <input type="hidden" name="accion" value="editarCursosUsuario">
           <input type="hidden" name="cursoUsuId" id="cursoUsuId">
+          <input type="hidden" name="cursoUsuIdCreador" value="<?php echo($usuario['id']); ?>">
           <div class="modal-body" id="contenido-cursos-usuarios">
             
           </div>
@@ -378,6 +379,25 @@
       }
     });
 
+    //Form editar curso por usuario
+    $("#formCursosUsuarios").submit(function(event){
+      event.preventDefault();
+      $.ajax({
+        url: 'acciones',
+        type: 'POST',
+        cache: false,
+        contentType: false,
+        processData: false,
+        data: new FormData(this),
+        success: function(data){
+          alertify.success(data);
+        },
+        error: function(){
+          alertify.error("Error al actualizar");
+        }
+      });
+    });
+
     $("#nro_doc").focusout(function(){
       if ($("#nro_doc").val() != "") {
         $.ajax({
@@ -512,14 +532,18 @@
       dataType: 'html',
       data: {accion: 'listaCursoUsuarios', idUsu: id},
       success: function(data){
+        $("#cursoUsuId").val(id);
         $("#contenido-cursos-usuarios").html(data);
+        $("#modal-cursoUsuarios").modal("show");
       },
       error: function(){
         alertify.error("No se ha podido cargar. los cursos.");  
       }
     });
+  }
 
-    $("#modal-cursoUsuarios").modal("show");
+  function estadoUsuario(idUsu){
+    
   }
     
 </script>
