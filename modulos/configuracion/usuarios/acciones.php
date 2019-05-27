@@ -108,8 +108,10 @@
                         <td class='align-middle'>" . $usuarios[$i]['u_usuario'] . "</td>
                         <td class='align-middle'>" . $usuarios[$i]['u_nombre1'] . " " . $usuarios[$i]['u_nombre2'] . " " . $usuarios[$i]['u_apellido1'] . " " . $usuarios[$i]['u_apellido2'] . "</td>
                         <td class='align-middle'>" . $usuarios[$i]['u_telefono'] . "</td>
-                        <td class='d-flex justify-content-around'>
-                        <!--<button class='btn btn-info' onClick='estadoUsuario(". $usuarios[$i]['u_id'] .")'><i class='far fa-calendar-check'></i></button>--> ";
+                        <td class='d-flex justify-content-around'>";
+        if ($permisos->validarPermiso($usuario['id'], "usuarios_taller_intentos")) {
+          $respuesta .= "<button class='btn btn-info' onClick='estadoUsuario(". $usuarios[$i]['u_id'] .")'><i class='far fa-calendar-check'></i></button>";
+        }
 
         if ($permisos->validarPermiso($usuario['id'], "usuarios_editar")) {
           $respuesta .= "<button class='btn btn-success' onClick='editarUsuario(". $usuarios[$i]['u_id'] .")'><i class='fas fa-user-edit'></i></button>";
@@ -308,6 +310,93 @@
 
     $db->desconectar();
     return $resp;
+  }
+
+  function listaCursosUsuarioProgreso(){
+    $db = new Bd();
+    $db->conectar();
+    $resp = "";
+    
+    $listaCursos = $db->consulta("SELECT * FROM mandino_curso_usuario INNER JOIN mandino_curso ON mc_id = fk_mc WHERE id_usuario = :id_usuario AND mcu_activo = 1", array(":id_usuario" => $_REQUEST['idUsu']));
+
+    for ($i=0; $i < $listaCursos['cantidad_registros']; $i++) { 
+      $resp .= '<button type="button" value="' . $listaCursos[$i]['fk_mc'] . '" class="evaluaciones list-group-item list-group-item-action d-flex justify-content-between"><span>' . $listaCursos[$i]['mc_nombre'] . '</span><span>' . porcentajeCurso($listaCursos[$i]['fk_mc'], $_REQUEST['idUsu']) . '%</span></button>';
+    }
+
+    $db->desconectar();
+
+    return $resp;
+  }
+
+  function talleresRealizados(){
+    $db = new Bd();
+    $resp = "";
+    $db->conectar();
+
+    $sql = $db->consulta('SELECT mlv.mlv_id AS mlv_id, mu.mu_nombre AS nombre_unidad, mlv.mlv_taller_intento_adicional AS intento_adicional FROM mandino_lecciones AS ml INNER JOIN mandino_lecciones_visto AS mlv ON ml.ml_id = mlv.fk_ml INNER JOIN mandino_unidades AS mu ON ml.fk_mu = mu.mu_id WHERE ml.fk_mt <> "NULL" AND mu.fk_mc = :fk_mc AND mlv.fk_usuario = :idUsu', 
+                          array(":fk_mc" => $_REQUEST['idCurso'], ":idUsu" => $_REQUEST['idUsu']));
+    
+    if ($sql['cantidad_registros'] > 0) {
+      for ($i=0; $i < $sql['cantidad_registros']; $i++) { 
+        $resp .= '<div class="row">
+                    <div class="col-6 align-self-center">
+                      <span>' . $sql[$i]['nombre_unidad'] . '</span>
+                    </div>
+                    <div class="col-6 align-self-center">
+                      <div class="input-group spinner">
+                        <div class="input-group-prepend">
+                          <button value="' . $sql[$i]['mlv_id'] . '" class="btn text-monospace minus btn-primary" type="button">-</button>
+                        </div>
+                        <input type="number" class="count form-control" disabled="true" min="0" max="30" step="0" value="'. $sql[$i]['intento_adicional'] .'">
+                        <div class="input-group-append">
+                          <button value="' . $sql[$i]['mlv_id'] . '" class="btn text-monospace plus btn-primary" type="button">+</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>';
+        if($sql['cantidad_registros'] > 1 && ($sql['cantidad_registros']-1) != $i){
+          $resp .= "<hr>";
+        }      
+      }
+    }else{
+      $resp .= "<p class='text-center'>No se ha realizado ninguna evaluación</p>";
+    }
+    
+
+    $db->desconectar();
+    return $resp;
+  }
+
+  function actualizarIntentosTaller(){
+    $db = new Bd();
+    $db->conectar();
+
+    $db->sentencia("UPDATE mandino_lecciones_visto SET mlv_taller_intento_adicional = :intento WHERE mlv_id = :mlv_id", array(":mlv_id" => $_REQUEST['idMLV'], ":intento" =>$_REQUEST['intentos']));
+
+    $db->desconectar();
+
+    return "Ok";
+  }
+
+  function porcentajeCurso($curso, $usuario){
+    $db = new Bd();
+    $db->conectar();
+    $cont = 0; 
+    $contUsu = 0;
+    $porcentaje = 0;
+
+    $sql_select_cantidadLecciones = $db->consulta("SELECT * FROM mandino_curso INNER JOIN mandino_unidades ON fk_mc = mc_id INNER JOIN mandino_lecciones ON fk_mu = mu_id WHERE mc_id = :mc_id", array(":mc_id" => $curso));
+    $cont = $sql_select_cantidadLecciones['cantidad_registros'];
+
+    $sql_select_cantidadLecciones_usuario = $db->consulta("SELECT * FROM mandino_curso INNER JOIN mandino_unidades ON fk_mc = mc_id INNER JOIN mandino_lecciones ON fk_mu = mu_id INNER JOIN mandino_lecciones_visto AS mlv ON mlv.fk_ml = ml_id WHERE mc_id = :mc_id AND mlv.fk_usuario = :fk_usuario", array(":mc_id" => $curso, ":fk_usuario" => $usuario));
+
+    $contUsu = $sql_select_cantidadLecciones_usuario['cantidad_registros'];
+
+    //Formulamos el porcentaje
+    $porcentaje = ($contUsu * 100)/$cont;
+
+    $db->desconectar();
+    return round($porcentaje);
   }
 
   if(@$_REQUEST['accion']){

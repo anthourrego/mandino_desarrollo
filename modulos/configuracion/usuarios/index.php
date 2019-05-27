@@ -41,6 +41,20 @@
     echo $lib->alertify();
     echo $lib->mandino();
   ?>
+  <style>
+    .spinner * {
+      text-align: center;
+    }
+    .spinner input::-webkit-outer-spin-button,
+    .spinner input::-webkit-inner-spin-button {
+      margin: 0;
+      -webkit-appearance: none;
+    }
+    .spinner input:disabled {
+      background-color: white;
+    }
+
+  </style>
 </head>
 <body>
 	<?php include_once($ruta_raiz . 'navBar.php'); ?>
@@ -206,7 +220,7 @@
     </div>
   </div>
   
-  <!-- Modal Editar Usuario -->
+  <!-- Modal Editar Curso Usuario -->
   <div class="modal fade" id="modal-cursoUsuarios" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
@@ -231,6 +245,51 @@
     </div>
   </div>
 
+  
+  <!-- Modal Editar Curso Usuario -->
+  <div class="modal fade" id="modal-progresoUsuarios" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="crearUsuarioLabel"><i class="fas fa-book"></i> Progreso - Usuarios</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-6">
+              <div class="list-group" id="listaProgresoCurso"></div>
+            </div>
+            <div class="col-6" id="listaTalleresUnidad">
+              <div class="row">
+                <div class="col-6 align-self-center">
+                  <span>Funca</span>
+                </div>
+                <div class="col-6">
+                  <div class="input-group spinner">
+                    <div class="input-group-prepend">
+                      <button class="btn text-monospace minus btn-primary" type="button">-</button>
+                    </div>
+                    <input type="number" class="count form-control" disabled="true" min="0" max="30" step="0" value="0">
+                    <div class="input-group-append">
+                      <button class="btn text-monospace plus btn-primary" type="button">+</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <hr>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer d-flex justify-content-center">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal"><i class="fas fa-times"></i> Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
 </body>
 <?php 
   echo $lib->cambioPantalla();
@@ -245,7 +304,6 @@
       idBoton = $(this).val();
       cargarUsuarios(idBoton);
     });
-
 
     $.ajax({
       url: '<?php echo($ruta_raiz) ?>modulos/configuracion/cursos/acciones',
@@ -543,7 +601,84 @@
   }
 
   function estadoUsuario(idUsu){
-    
+    $.ajax({
+      url: 'acciones',
+      type: 'POST',
+      dataType: 'html',
+      data: {accion: 'listaCursosUsuarioProgreso', idUsu: idUsu},
+      success: function(data){
+        $("#listaProgresoCurso").html(data);
+        $("#listaTalleresUnidad").empty();
+        //Activamos el botón al darle click
+        $(".evaluaciones").on("click", function(){
+          $(".evaluaciones").removeClass("active");
+          $(this).addClass("active");
+        });
+
+        $("#modal-progresoUsuarios").modal("show");
+        $(".evaluaciones").on("click", function(){
+          //Traemos la evaluaciones que ha realizado de ese taller
+          $.ajax({
+            url: 'acciones',
+            type: 'POST',
+            dataType: 'html',
+            data: {accion: "talleresRealizados", idUsu: idUsu, idCurso: $(this).val()},
+            success: function(data){
+              $("#listaTalleresUnidad").html(data);
+
+              //Botones de intentos
+              //$('.count').prop('disabled', true);
+              $(".minus").on("click", function() {
+                var input = $(this).parent().next();
+                if (input.val() > 0) {
+                  input.val(parseInt(input.val()) - 1 );
+                  actualizarIntentoTaller($(this).val(), input.val());    
+                  /*$('.count').val(parseInt($('.count').val()) - 1 );
+                  $('.counter').text(parseInt($('.counter').text()) - 1 );*/
+                }
+              });
+              $(".plus").on("click", function() {
+                var input = $(this).parent().prev();
+                if (input.val() < 30) {
+                  input.val(parseInt(input.val()) + 1 ); 
+                  actualizarIntentoTaller($(this).val(), input.val());       
+                  //$('.count').val(parseInt($('.count').val()) + 1 );
+                  //$('.counter').text(parseInt($('.counter').text()) + 1 );
+                  //console.log($(this).parent().prev().val());
+                }
+              });
+              //Fin botónes de intentos
+            },
+            error: function(){
+             alertify.error("No se ha cargado la lista."); 
+            }
+          })
+
+        });
+      },
+      error: function(){
+        alertify.error("No se ha cargado la lista");
+      }
+    });
+  }
+
+  function actualizarIntentoTaller(idMlv, cont){
+    $.ajax({
+      url: 'acciones',
+      type: 'POST',
+      dataType: 'html',
+      data: {accion: "actualizarIntentosTaller", idMLV: idMlv, intentos: cont},
+      success: function(data){
+        if(data == "Ok"){
+          alertify.success("Intento agregado.");
+        }else{
+          alertify.error("No se ha podido agregar el inteto.");
+        }
+      },
+      error: function(){
+        alertity.error("No se ha actualizado...");
+      }
+    });
   }
     
 </script>
