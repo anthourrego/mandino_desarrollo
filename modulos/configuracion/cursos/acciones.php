@@ -34,39 +34,6 @@
   	return $resp;
   }
 
-  function ListaCursos1(){
-    $db = new Bd();
-    $cursos = "";
-    $db->conectar();
-
-    $cursos = $db->consulta("SELECT * FROM mandino_curso");
-
-    $db->desconectar();
-
-    return json_encode($cursos);
-  }
-
-  function listaModulos(){
-    $db = new Bd();
-    $modulos = "";
-    $resp = "";
-    $db->conectar();
-
-    $modulos = $db->consulta("SELECT * FROM mandino_modulos WHERE fk_mc = :fk_mc", array(":fk_mc" => $_POST['idCurso']));
-
-    for ($i=0; $i < $modulos['cantidad_registros']; $i++) { 
-      $resp .= "<tr onClick='datosModulo(" . $modulos[$i]['mm_id'] . ")' ondblclick='redireccionModulo(" . $modulos[$i]['mm_id'] . ")'>";
-
-      $resp .= "<td>" . $modulos[$i]['mm_nombre'] . "</td>";
-
-      $resp .= "</tr>";
-    }
-
-    $db->desconectar();
-
-    return $resp;
-  }
-
   function datosCurso(){
   	$db = new Bd();
   	$datos = "";
@@ -123,45 +90,13 @@
     return "Ok";
   }
 
-  function datosModulo(){
-    $datos = "";
-    $db = new Bd();
-    $db->conectar();
-
-    $datos = $db->consulta("SELECT * FROM mandino_modulos WHERE mm_id = :mm_id", array(":mm_id" => $_POST['idModulo']));
-
-    $db->desconectar();
-
-    return json_encode($datos[0]);
-  }
-
-  function formCrearModulo(){
-    $db = new Bd();
-    $db->conectar();
-
-    $db->sentencia("INSERT INTO mandino_modulos(mm_nombre, mm_descripcion, mm_fecha_creacion, mm_id_creador, fk_mc) VALUES(:mm_nombre, :mm_descripcion, :mm_fecha_creacion, :mm_id_creador, :fk_mc)", array(":mm_nombre" => $_POST['crearNombreModulo'], ":mm_descripcion" => $_POST['crearDescripcionModulo'], ":mm_fecha_creacion" => date("Y-m-d H:i:s"), ":mm_id_creador" => $_POST['idUsu'], ":fk_mc" => $_POST['idCurso']));
-
-    $db->desconectar();
-    return "Ok";
-  }
-
-  function formEditarModulo(){
-    $db = new Bd();
-    $db->conectar();
-
-    $db->sentencia("UPDATE mandino_modulos SET mm_nombre = :mm_nombre, mm_descripcion = :mm_descripcion WHERE mm_id = :mm_id", array(":mm_id" => $_POST['idModulo'], ":mm_nombre" => $_POST['editNombreModulo'], ":mm_descripcion" => $_POST['editDescripcionModulo']));
-
-    $db->desconectar();
-    return "Ok";
-  }
-
   function listaUnidades(){
     $resp = "";
     $unidades = "";
     $db = new Bd();
     $db->conectar();
 
-    $unidades = $db->consulta("SELECT * FROM mandino_unidades WHERE fk_mm = :fk_mm", array(":fk_mm" => $_POST['idModulo']));
+    $unidades = $db->consulta("SELECT * FROM mandino_unidades WHERE fk_mc = :fk_mc", array(":fk_mc" => $_POST['idCurso']));
 
     for ($i=0; $i <$unidades['cantidad_registros']; $i++) { 
       $resp .= "<tr id='" . $unidades[$i]['mu_id'] . "' onClick='datosUnidad(" . $unidades[$i]['mu_id'] . ")'>";

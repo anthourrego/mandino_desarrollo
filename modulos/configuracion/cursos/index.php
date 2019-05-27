@@ -318,7 +318,7 @@
   }
 
   function dobleClick(id){
-    window.location.href = "modulos?idCurso=" + id;
+    window.location.href = "unidades?idCurso=" + id;
   }
 </script>
 </html>

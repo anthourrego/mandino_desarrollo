@@ -53,7 +53,6 @@
     <nav aria-label="breadcrumb">
       <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="index">Cursos</a></li>
-        <li class="breadcrumb-item"><a href="" id="nav-curso">Modulo</a></li>
         <li class="breadcrumb-item active" aria-current="page" id="nav-modulo">Unidades</li>
       </ol>
     </nav>
@@ -168,9 +167,7 @@
 <script type="text/javascript">
   $(function(){
     navCurso();
-    navModulo();
     listaUnidades();
-    
   });
 
   function listaUnidades(){
@@ -178,7 +175,7 @@
       url: 'acciones',
       type: 'POST',
       dataType: 'html',
-      data: {accion: 'listaUnidades', idModulo: <?php echo($_GET['idModulo']); ?>},
+      data: {accion: 'listaUnidades', idCurso: <?php echo($_GET['idCurso']); ?>},
       success: function(data){
         $("#tabla").dataTable().fnDestroy();
         $("#contenido-tabla").empty();
@@ -241,22 +238,6 @@
       },
       error: function(){
         alertify.error("No se han cargado las datos del curso.");
-      }
-    });
-  }
-
-
-  function navModulo(){
-    $.ajax({
-      url: 'acciones',
-      type: 'POST',
-      dataType: 'json',
-      data: {accion: 'datosModulo', idModulo: <?php echo($_GET['idModulo']); ?>},
-      success: function(data){
-        $("#nav-modulo").html(data.mm_nombre);
-      },  
-      error: function(){
-        alertify.error("Se se ha cargado el modulo."); 
       }
     });
   }
