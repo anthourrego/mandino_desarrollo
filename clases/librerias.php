@@ -151,6 +151,15 @@
       return $this->cadena_libreria;
     }
 
+    public function bootstrapSelect(){
+      $this->cadena_libreria = '
+      <!-- Slide Bootstrap Select -->
+      <link rel="stylesheet" href="' . $this->ruta_libreria . 'bootstrap-select/css/bootstrap-select.min.css"/>
+      <script type="text/javascript" src="' . $this->ruta_libreria . 'bootstrap-select/js/bootstrap-select.min.js"></script>
+      <script type="text/javascript" src="' . $this->ruta_libreria . 'bootstrap-select/js/i18n/defaults-es_ES.js"></script>';
+      return $this->cadena_libreria;
+    }
+
     public function cambioPantalla(){
       $this->cadena_libreria = '
       <script type="text/javascript">
