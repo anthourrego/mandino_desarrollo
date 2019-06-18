@@ -39,6 +39,7 @@
     echo $lib->bsCustomFileInput();
     echo $lib->jqueryValidate();
     echo $lib->alertify();
+    echo $lib->bootstrapSelect();
     echo $lib->mandino();
   ?>
   <style>
@@ -77,7 +78,7 @@
     <table id="tabla" class="table table-bordered table-hover table-sm">
       <thead>
         <tr>
-          <th class="text-center">Fecha Creacion</th>
+          <th class="text-center">Ciudad</th>
           <th class="text-center">Nro Documento</th>
           <th class="text-center">Usuario</th>
           <th class="text-center">Nombre</th>
@@ -147,6 +148,14 @@
                 <label>Teléfono</label>
                 <input class="form-control" type="tel" name="telefono" onkeypress="return soloNumeros(event);" id="telefono">
               </div>
+              <div class="form-group col-6">
+                <label for="">Departamento <span class="text-danger">*</span></label>
+                <select class="selectpicker form-control" required id="departamentos" name="departamentos" data-live-search="true" data-size="5" title="Seleccione un departamento"></select>
+              </div>
+              <div class="form-group col-6">
+                <label for="">Ciudades <span class="text-danger">*</span></label>
+                <select class="selectpicker form-control" required id="ciudades" name="ciudades" data-live-search="true" data-size="5" title="Seleccione una ciudad"></select>
+              </div>
               <div class="col-12 text-center">
                 <hr>
                 <h5>Cursos</h5>
@@ -209,6 +218,14 @@
               <div class="form-group col-12 col-md-6">
                 <label>Teléfono</label>
                 <input class="form-control" type="text" onkeypress="return soloNumeros(event);" id="editTelefono"  name="editTelefono">
+              </div>
+              <div class="form-group col-12 col-md-6">
+                <label for="">Departamento <span class="text-danger">*</span></label>
+                <select class="selectpicker form-control" required id="editdepartamentos" name="editdepartamentos" data-live-search="true" data-size="5" title="Seleccione un departamento"></select>
+              </div>
+              <div class="form-group col-12 col-md-6">
+                <label for="">Ciudades <span class="text-danger">*</span></label>
+                <select class="selectpicker form-control" required id="editciudades" name="editciudades" data-live-search="true" data-size="5" title="Seleccione una ciudad"></select>
               </div>
             </div>
           </div>
@@ -296,6 +313,76 @@
 ?>
 <script type="text/javascript">
   $(function(){
+    $.ajax({
+      url: "acciones",
+      type: "POST",
+      dataType: "json",
+      cache: false,
+      data: {accion: "departamentos"},
+      success: function(data){
+        for (let i = 0; i < data.cantidad_registros; i++) {
+          $("#departamentos").append(`
+            <option value="${data[i].d_id}">${data[i].d_nombre}</option>
+          `);
+
+          $("#editdepartamentos").append(`
+            <option value="${data[i].d_id}">${data[i].d_nombre}</option>
+          `);
+        }
+        $("#departamentos").selectpicker('refresh');
+        $("#editdepartamentos").selectpicker('refresh');
+      },
+      error: function(){
+        alertify.error("No se han cargado la departamentos");
+      }
+    });
+
+    $("#departamentos").on('change', function() {
+      $.ajax({
+        url: "acciones",
+        type: "POST",
+        dataType: "json",
+        cache: false,
+        data: {accion: "ciudades", dep: $(this).val()},
+        success: function(data){
+          $("#ciudades").empty();
+          for (let i = 0; i < data.cantidad_registros; i++) {
+            $("#ciudades").append(`
+              <option value="${data[i].m_id}">${data[i].m_nombre}</option>
+            `);
+          }
+          $("#ciudades").selectpicker('refresh');
+          $("#ciudades").focus().select();
+        },
+        error: function(){
+          alertify.error("Error al cargar las ciudades");
+        }
+      });
+    });
+
+    $("#editdepartamentos").on('change', function() {
+      $.ajax({
+        url: "acciones",
+        type: "POST",
+        dataType: "json",
+        cache: false,
+        data: {accion: "ciudades", dep: $(this).val()},
+        success: function(data){
+          $("#editciudades").empty();
+          for (let i = 0; i < data.cantidad_registros; i++) {
+            $("#editciudades").append(`
+              <option value="${data[i].m_id}">${data[i].m_nombre}</option>
+            `);
+          }
+          $("#editciudades").selectpicker('refresh');
+          $("#editciudades").focus().select();
+        },
+        error: function(){
+          alertify.error("Error al cargar las ciudades");
+        }
+      });
+    });
+
     var idBoton = 1;
     cargarUsuarios(idBoton);
     $(".btn-usu").on("click", function(){
@@ -312,7 +399,6 @@
       data: {accion: 'ListaCursos1'},
       success: function(data){
         for (var i = 0; i < data.cantidad_registros; i++) {
-          //console.log(data[i]);
           $("#listaCursos").append('<div class="custom-control custom-checkbox custom-control-inline"><input type="checkbox" name="cursos[]" class="custom-control-input" value="' + data[i].mc_id + '" id="cursos' + data[i].mc_id + '"><label class="custom-control-label" for="cursos' + data[i].mc_id + '">' + data[i].mc_nombre + '</label></div>');
         }
       },
@@ -334,7 +420,9 @@
         correo: {
           required: true,
           email: true
-        }
+        },
+        departamentos: "required",
+        ciudades: "required"
       },
       errorElement: 'span',
       errorPlacement: function (error, element) {
@@ -567,6 +655,32 @@
         $("#editApellido2").val(data.u_apellido2);
         $("#editCorreo").val(data.u_correo);
         $("#editTelefono").val(data.u_telefono);
+        $.ajax({
+          url: "acciones",
+          type: "POST",
+          dataType: "json",
+          cache: false,
+          data: {accion: "editCiudades", m_id: data.fk_ciudad},
+          success: function(data1){
+            for (let i = 0; i < data1.cantidad_registros; i++) {
+              $("#editciudades").append(`
+                <option value="${data1[i].m_id}">${data1[i].m_nombre}</option>
+              `);
+            }
+            if (data.fk_ciudad != 0) {
+              $('#editciudades').selectpicker('val', data.fk_ciudad);
+              $("#editdepartamentos").selectpicker('val', data1[0].fk_departamento);
+            }else{
+              $('#editciudades').selectpicker('val', 0);
+              $('#editdepartamentos').selectpicker('val', 0);
+            }
+            $("#editciudades").selectpicker('refresh');
+          },
+          error: function(){
+            alertify.error("No se han cargado la ciudades");
+          }
+        });
+
       },
       error: function(){
         alertify.error('Error al editar el usuario');
