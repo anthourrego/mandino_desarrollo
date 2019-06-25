@@ -67,9 +67,9 @@
   		$porcentaje = porcentajeCurso($sql_mc[$i]['mc_id'], $_POST['id_usu']);
 
   		if ($porcentaje == 0) {
-	      $curso .= '<div class="col-12 col-sm-6 col-lg-4 mt-4">
-	                  <div class="card">
-	                    <div class="card-body m-shadow m-shadow-primary">
+	      $curso .= '<div class="col-12 col-sm-6 col-lg-4 mt-4 card-deck">
+	                  <div class="card m-shadow m-shadow-primary">
+	                    <div class="card-body">
                      		<div class="row">
                       		<div class="col-10">
                         		<h3 class="card-title text-center mb-3">' . $sql_mc[$i]['mc_nombre'] . '</h3>
@@ -82,7 +82,9 @@
                       		
       	$curso .= '</div>
       									</div>
-	                      <div class="d-flex justify-content-between text-muted">
+											</div>
+											<div class="card-footer bg-transparent border-0">
+												<div class="d-flex justify-content-between text-muted">
 	                        <span>' . $porcentaje . '%</span>
 	                        <span>' . $sql_mu['cantidad_registros'] . ' Unidades</span>
 	                      </div>
@@ -92,13 +94,13 @@
 	                      <div class="text-center">
 	                        <a class="btn btn-primary rounded-pill" href="unidades?curso=' . $sql_mc[$i]['mc_id'] . '"><i class="fas fa-pencil-alt"></i> Iniciar</a>
 	                      </div>
-	                    </div>
+											</div>
 	                  </div>
 	                </div>';
 	      }elseif ($porcentaje > 0 && $porcentaje < 100) {
-	        $curso .= '<div class="col-12 col-sm-6 col-lg-4 mt-4">
-	                    <div class="card">
-	                      <div class="card-body border border-warning m-shadow m-shadow-warning">
+	        $curso .= '<div class="col-12 col-sm-6 col-lg-4 mt-4 card-deck">
+	                    <div class="card border border-warning m-shadow m-shadow-warning">
+	                      <div class="card-body">
 	                      	<div class="row">
 	                      		<div class="col-10">
 	                        		<h3 class="card-title text-center mb-3">' . $sql_mc[$i]['mc_nombre'] . '</h3>
@@ -111,7 +113,10 @@
 	                      		
 	      	$curso .= '</div>
 	                      	</div>
-	                        <div class="d-flex justify-content-between text-muted">
+	                        
+													</div>
+													<div class="card-footer bg-transparent border-0">
+													<div class="d-flex justify-content-between text-muted">
 	                          <span>' . $porcentaje . '%</span>
 	                          <span>' . $sql_mu['cantidad_registros'] . ' Unidades</span>
 	                        </div>
@@ -121,13 +126,13 @@
 	                        <div class="text-center">
 	                          <a class="btn btn-warning rounded-pill" href="unidades?curso=' . $sql_mc[$i]['mc_id'] . '"><i class="fas fa-user-edit"></i> Continuar</a>
 	                          </div>
-	                        </div>
+													</div>
 	                      </div>
 	                    </div>';
 	      }elseif ($porcentaje == 100) {
-	        $curso .= '<div class="col-12 col-sm-6 col-lg-4 mt-4">
-	                    <div class="card">
-	                      <div class="card-body border border-info m-shadow m-shadow-info">
+	        $curso .= '<div class="col-12 col-sm-6 col-lg-4 mt-4 card-deck">
+	                    <div class="card border border-info m-shadow m-shadow-info">
+	                      <div class="card-body">
 	                        <div class="row">
 	                      		<div class="col-10">
 	                        		<h3 class="card-title text-center mb-3">' . $sql_mc[$i]['mc_nombre'] . '</h3>
@@ -140,7 +145,10 @@
 	                      		
 	      	$curso .= '</div>
 	                      	</div>
-	                        <div class="d-flex justify-content-between text-muted">
+	                    
+												</div>
+												<div class="card-footer bg-transparent border-0">
+													<div class="d-flex justify-content-between text-muted">
 	                          <span>' . $porcentaje . '%</span>
 	                          <span>' . $sql_mu['cantidad_registros'] . ' Unidades</span>
 	                        </div>
@@ -150,13 +158,13 @@
 	                        <div class="text-center">
 	                          <a class="btn btn-info rounded-pill" href="unidades?curso=' . $sql_mc[$i]['mc_id'] . '"><i class="fas fa-star" style="color: #FFDD43;"></i> Finalizado</a>
 	                        </div>
-	                      </div>
+												</div>
 	                    </div>
 	                  </div>';
 	      }else{
-	        $curso .= '<div class="col-12 col-sm-6 col-lg-4 mt-4">
-	                    <div class="card">
-	                      <div class="card-body border border-success m-shadow m-shadow-success">
+	        $curso .= '<div class="col-12 col-sm-6 col-lg-4 mt-4 card-deck">
+	                    <div class="card border border-primary m-shadow m-shadow-primary">
+	                      <div class="card-body">
 	                        <div class="row">
 	                      		<div class="col-10">
 	                        		<h3 class="card-title text-center mb-3">' . $sql_mc[$i]['mc_nombre'] . '</h3>
@@ -168,8 +176,10 @@
 	                        		
 	                      		
 	      	$curso .= '</div>
-	                      	</div>
-	                        <div class="d-flex justify-content-between text-muted">
+												</div>
+											</div>
+												<div class="card-footer bg-transparent border-0">
+													<div class="d-flex justify-content-between text-muted">
 	                          <span>' . $porcentaje . '%</span>
 	                          <span>' . $sql_mu['cantidad_registros'] . ' Unidades</span>
 	                        </div>
@@ -179,7 +189,7 @@
 	                        <div class="text-center">
 	                          <button class="btn btn-primary rounded-pill disabled" disabled><i class="fas fa-pencil-ruler"></i> Iniciar</button>
 	                        </div>
-	                      </div>
+												</div>
 	                    </div>
 	                  </div>';
 	      }
