@@ -46,8 +46,10 @@
           $logo_navbar = "logo.png";
         }
 
+        $bd->sentencia("INSERT INTO log_session (fk_usuario, log_fecha_creacion) VALUES (:fk_usuario, :log_fecha_creacion)", array(":fk_usuario" => $select_usuario[0]['u_id'], ":log_fecha_creacion" => date("Y-m-d H:i:s")));
+        
         $bd->desconectar();
-
+        
         $session = new Session();
 
   			$array_session_usuario = array('nombre' => $select_usuario[0]['u_nombre1'] . " " . $select_usuario[0]['u_nombre2'] . " " . $select_usuario[0]['u_apellido1'] . " " . $select_usuario[0]['u_apellido2'],
