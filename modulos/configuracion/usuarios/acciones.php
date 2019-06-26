@@ -92,45 +92,57 @@
     $db->conectar();
     $respuesta = "";
 
-    if ($_POST['activo'] != 2) {
-      $usuarios = $db->consulta("SELECT * FROM mandino_usuarios INNER JOIN municipios ON m_id = fk_ciudad WHERE u_activo = :u_activo", array(":u_activo" => $_POST['activo']));
-    }else{
-      $usuarios = $db->consulta("SELECT * FROM mandino_usuarios INNER JOIN municipios ON m_id = fk_ciudad");
-    }
+    $usuarios = $db->consulta("SELECT * FROM mandino_usuarios INNER JOIN municipios ON m_id = fk_ciudad WHERE u_activo = 1");
 
     $db->desconectar();
     
     if ($usuarios['cantidad_registros'] > 0) {
+      if ($permisos->validarPermiso($usuario['id'], "usuarios_taller_intentos")) {
+        $taller_intentos = 1;
+      }
+
+      if ($permisos->validarPermiso($usuario['id'], "usuarios_editar")) {
+        $editar = 1;
+      }
+
+      if ($permisos->validarPermiso($usuario['id'], 'usuarios_permisos')) {
+        $permiso = 1;
+      }
+
+      if ($permisos->validarPermiso($usuario['id'], 'usuarios_cursos')) {
+        $cursos = 1;
+      }
+
+      if ($permisos->validarPermiso($usuario['id'], "usuarios_habilitar_inhabilitar")) {
+        $inhabilitar = 1;
+      }
+
       for ($i=0; $i < $usuarios['cantidad_registros']; $i++) { 
+
         $respuesta .= "<tr>
                         <td class='align-middle'>" . $usuarios[$i]['m_nombre'] . "</td>
                         <td class='align-middle'>" . $usuarios[$i]['u_nro_documento'] . "</td>
                         <td class='align-middle'>" . $usuarios[$i]['u_usuario'] . "</td>
                         <td class='align-middle'>" . $usuarios[$i]['u_nombre1'] . " " . $usuarios[$i]['u_nombre2'] . " " . $usuarios[$i]['u_apellido1'] . " " . $usuarios[$i]['u_apellido2'] . "</td>
-                        <td class='align-middle'>" . $usuarios[$i]['u_telefono'] . "</td>
                         <td class='d-flex justify-content-around'>";
-        if ($permisos->validarPermiso($usuario['id'], "usuarios_taller_intentos")) {
-          $respuesta .= "<button class='btn btn-info' onClick='estadoUsuario(". $usuarios[$i]['u_id'] .")'><i class='far fa-calendar-check'></i></button>";
+        if ($taller_intentos == 1) {
+          $respuesta .= "<button class='btn btn-info' onClick='estadoUsuario(". $usuarios[$i]['u_id'] .")' data-toggle='tooltip' title='Progreso'><i class='far fa-calendar-check'></i></button>";
         }
 
-        if ($permisos->validarPermiso($usuario['id'], "usuarios_editar")) {
-          $respuesta .= "<button class='btn btn-success' onClick='editarUsuario(". $usuarios[$i]['u_id'] .")'><i class='fas fa-user-edit'></i></button>";
+        if ($editar == 1) {
+          $respuesta .= "<button class='btn btn-success' onClick='editarUsuario(". $usuarios[$i]['u_id'] .")' data-toggle='tooltip' title='Editar'><i class='fas fa-user-edit'></i></button>";
         }
 
-        if ($permisos->validarPermiso($usuario['id'], 'usuarios_permisos')) {
-          $respuesta .= "<button class='btn btn-info' onClick='permisos(". $usuarios[$i]['u_id'] .")'><i class='fas fa-user-shield'></i></button>";
+        if ($permiso == 1) {
+          $respuesta .= "<button class='btn btn-info' onClick='permisos(". $usuarios[$i]['u_id'] .")' data-toggle='tooltip' title='Permisos'><i class='fas fa-user-shield'></i></button>";
         }
 
-        if ($permisos->validarPermiso($usuario['id'], 'usuarios_cursos')) {
-          $respuesta .= "<button class='btn btn-secondary' onClick='cursos(". $usuarios[$i]['u_id'] .")'><i class='fas fa-book'></i></button>";
+        if ($cursos == 1) {
+          $respuesta .= "<button class='btn btn-secondary' onClick='cursos(". $usuarios[$i]['u_id'] .")' data-toggle='tooltip' title='Cursos'><i class='fas fa-book'></i></button>";
         }
 
-        if ($permisos->validarPermiso($usuario['id'], "usuarios_habilitar_inhabilitar")) {
-          if($usuarios[$i]['u_activo'] == 1){
-            $respuesta .= "<button class='btn btn-danger' onClick='inHabilitarUsuario(" . $usuarios[$i]['u_id'] . ", 0)'><i class='fas fa-user-minus'></i></button>";
-          }elseif ($usuarios[$i]['u_activo'] == 0) {
-            $respuesta .= "<button class='btn btn-primary' onClick='inHabilitarUsuario(" . $usuarios[$i]['u_id'] . ", 1)'><i class='fas fa-user-check'></i></button>";
-          }
+        if ($inhabilitar == 1) {
+          $respuesta .= "<button class='btn btn-danger' onClick='inHabilitarUsuario(" . $usuarios[$i]['u_id'] . ")' data-toggle='tooltip' title='Inhabilitar'><i class='fas fa-user-minus'></i></button>";
         }
 
         $respuesta .= "</td>
@@ -241,7 +253,7 @@
     $db = new Bd();
     $db->conectar();
 
-    $db->sentencia("UPDATE mandino_usuarios SET u_activo = :u_activo WHERE u_id = :u_id", array(":u_id" => $_POST['id'], ":u_activo" => $_POST['activo']));
+    $db->sentencia("UPDATE mandino_usuarios SET u_activo = 0 WHERE u_id = :u_id", array(":u_id" => $_POST['id']));
 
     $db->desconectar();
   }
@@ -321,7 +333,7 @@
     $listaCursos = $db->consulta("SELECT * FROM mandino_curso_usuario INNER JOIN mandino_curso ON mc_id = fk_mc WHERE id_usuario = :id_usuario AND mcu_activo = 1", array(":id_usuario" => $_REQUEST['idUsu']));
 
     for ($i=0; $i < $listaCursos['cantidad_registros']; $i++) { 
-      $resp .= '<button type="button" value="' . $listaCursos[$i]['fk_mc'] . '" class="evaluaciones list-group-item list-group-item-action d-flex justify-content-between"><span>' . $listaCursos[$i]['mc_nombre'] . '</span><span>' . porcentajeCurso($listaCursos[$i]['fk_mc'], $_REQUEST['idUsu']) . '%</span></button>';
+      $resp .= '<button type="button" value="' . $listaCursos[$i]['fk_mc'] . '" class="pro_curso list-group-item d-flex justify-content-between align-items-center">' . $listaCursos[$i]['mc_nombre'] . '<span class="badge badge-primary badge-pill">' . porcentajeCurso($listaCursos[$i]['fk_mc'], $_REQUEST['idUsu']) . '%</span></button>';
     }
 
     $db->desconectar();
@@ -329,42 +341,76 @@
     return $resp;
   }
 
-  function talleresRealizados(){
+  function listaUnidadesUsuariosProgreso(){
     $db = new Bd();
-    $resp = "";
     $db->conectar();
+    $resp = "";
 
-    $sql = $db->consulta('SELECT mlv.mlv_id AS mlv_id, mu.mu_nombre AS nombre_unidad, mlv.mlv_taller_intento_adicional AS intento_adicional FROM mandino_lecciones AS ml INNER JOIN mandino_lecciones_visto AS mlv ON ml.ml_id = mlv.fk_ml INNER JOIN mandino_unidades AS mu ON ml.fk_mu = mu.mu_id WHERE ml.fk_mt <> "NULL" AND mu.fk_mc = :fk_mc AND mlv.fk_usuario = :idUsu', 
-                          array(":fk_mc" => $_REQUEST['idCurso'], ":idUsu" => $_REQUEST['idUsu']));
-    
-    if ($sql['cantidad_registros'] > 0) {
-      for ($i=0; $i < $sql['cantidad_registros']; $i++) { 
+    $listaUnidades = $db->consulta("SELECT * FROM mandino_unidades WHERE fk_mc = :fk_mc ORDER BY mu_orden ASC", array(":fk_mc" => $_GET['curso']));
+
+    for ($i=0; $i < $listaUnidades['cantidad_registros']; $i++) { 
+      $listaLeccionesXUnidad = $db->consulta("SELECT * FROM mandino_lecciones WHERE fk_mu = :fk_mu", array(":fk_mu" => $listaUnidades[$i]['mu_id']));
+      $listaLeccionesXUnidadVisto = $db->consulta("SELECT * FROM mandino_lecciones_visto AS mlv INNER JOIN mandino_lecciones AS ml ON ml.ml_id = mlv.fk_ml  WHERE mlv.fk_usuario = :fk_usuario AND ml.fk_mu = :fk_mu", array(":fk_mu" => $listaUnidades[$i]['mu_id'], ":fk_usuario" => $_GET['idUsu']));
+      
+      if ($listaLeccionesXUnidadVisto['cantidad_registros'] > 0) {
+        $resp .= '<button type="button" value="' . $listaUnidades[$i]['mu_id'] . '" class="pro_unidad list-group-item list-group-item-action d-flex justify-content-between">' . $listaUnidades[$i]['mu_nombre'] . '<span class="badge badge-primary badge-pill">' . $listaLeccionesXUnidadVisto['cantidad_registros'] . '/' . $listaLeccionesXUnidad['cantidad_registros'] . '<span></button>';
+      }else{
+        $resp .= '<button type="button" class="list-group-item list-group-item-action d-flex justify-content-between disabled bg-light text-dark" disabled>' . $listaUnidades[$i]['mu_nombre'] . '<span class="badge badge-primary badge-pill">' . $listaLeccionesXUnidadVisto['cantidad_registros'] . '/' . $listaLeccionesXUnidad['cantidad_registros'] . '<span></button>';
+      }
+    }
+
+    $db->desconectar();
+
+    return $resp;
+  }
+
+  function listaLeccionesUsuarioProgreso(){
+    $db = new Bd();
+    $db->conectar();
+    $resp = "";
+
+    $listaLecciones = $db->consulta("SELECT * FROM mandino_lecciones_visto AS mlv INNER JOIN mandino_lecciones AS ml ON ml.ml_id = mlv.fk_ml  WHERE mlv.fk_usuario = :fk_usuario AND ml.fk_mu = :fk_mu ORDER BY ml_orden ASC", array(":fk_mu" => $_GET['idUnidad'], ":fk_usuario" => $_GET['idUsu']));
+
+    $resp .= '<div class="row">
+                <div class="col-6">
+                  <h6 class="font-weight-bold">Lección</h6>
+                </div>
+                <div class="col-6">
+                  <h6 class="font-weight-bold">Fecha</h6>
+                </div>
+              </div><hr>';
+
+    for ($i=0; $i < $listaLecciones['cantidad_registros']; $i++) { 
+      if ($listaLecciones[$i]['fk_mt'] == "") {
+        $resp .= "<div class='row'>
+                    <div class='col-6'>" . $listaLecciones[$i]['ml_nombre'] . "</div>
+                    <div class='col-6'>" . date("d/m/Y h:i:s a", strtotime($listaLecciones[$i]['mlv_fecha_creacion'])) . "</div>
+                  </div>";
+      }else{
         $resp .= '<div class="row">
                     <div class="col-6 align-self-center">
-                      <span>' . $sql[$i]['nombre_unidad'] . '</span>
+                      <span>' . $listaLecciones[$i]['ml_nombre'] . '</span>
                     </div>
                     <div class="col-6 align-self-center">
                       <div class="input-group spinner">
                         <div class="input-group-prepend">
-                          <button value="' . $sql[$i]['mlv_id'] . '" class="btn text-monospace minus btn-primary" type="button">-</button>
+                          <button value="' . $listaLecciones[$i]['mlv_id'] . '" class="btn text-monospace minus btn-primary" type="button">-</button>
                         </div>
-                        <input type="number" class="count form-control" disabled="true" min="0" max="30" step="0" value="'. $sql[$i]['intento_adicional'] .'">
+                        <input type="number" class="count form-control" disabled="true" min="0" max="30" step="0" value="'. $listaLecciones[$i]['mlv_taller_intento_adicional'] .'">
                         <div class="input-group-append">
-                          <button value="' . $sql[$i]['mlv_id'] . '" class="btn text-monospace plus btn-primary" type="button">+</button>
+                          <button value="' . $listaLecciones[$i]['mlv_id'] . '" class="btn text-monospace plus btn-primary" type="button">+</button>
                         </div>
                       </div>
                     </div>
                   </div>';
-        if($sql['cantidad_registros'] > 1 && ($sql['cantidad_registros']-1) != $i){
-          $resp .= "<hr>";
-        }      
       }
-    }else{
-      $resp .= "<p class='text-center'>No se ha realizado ninguna evaluación</p>";
+      if(($listaLecciones['cantidad_registros']-1) != $i){
+        $resp .= "<hr>";
+      }   
     }
-    
 
     $db->desconectar();
+
     return $resp;
   }
 

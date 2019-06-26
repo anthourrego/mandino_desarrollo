@@ -61,18 +61,11 @@
 	<?php include_once($ruta_raiz . 'navBar.php'); ?>
   <!-- Contenido -->
   <div class="container-fluid mt-4">
-    <div class="d-flex justify-content-between mt-3 mb-3">
-      <div class="btn-group" role="group" aria-label="Basic example">
-        <button type="button" class="btn btn-primary btn-usu active" value="1"><i class="fas fa-user-check"></i> Activos</button>
-        <button type="button" class="btn btn-danger btn-usu" value="0"><i class="fas fa-user-alt-slash"></i> Inactivos</button>
-        <button type="button" class="btn btn-secondary btn-usu" value="2"><i class="fas fa-users"></i> Todos</button>
-      </div>
+    <div class="d-flex justify-content-end mt-3 mb-3">
       <?php  
-
         if ($permisos->validarPermiso($usuario['id'], "usuarios_crear")) {
           echo('<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#crearUsuario"><i class="fas fa-user-plus"></i> Crear</button>');
         }
-
       ?>
     </div>
     <table id="tabla" class="table table-bordered table-hover table-sm">
@@ -82,7 +75,6 @@
           <th class="text-center">Nro Documento</th>
           <th class="text-center">Usuario</th>
           <th class="text-center">Nombre</th>
-          <th class="text-center">Telefono</th>
           <th class="text-center">Acciones</th>
         </tr>
       </thead>
@@ -275,13 +267,16 @@
         </div>
         <div class="modal-body">
           <div class="row">
-            <div class="col-6">
+            <div class="col-12 col-sm-6 col-lg-4">
               <div class="list-group" id="listaProgresoCurso"></div>
             </div>
-            <div class="col-6" id="listaTalleresUnidad">
-              <div class="row">
+            <div class="col-12 col-sm-6 col-lg-4" id="listaProgresoUnidad">
+
+            </div>
+            <div class="col-12 col-sm-12 col-lg-4" id="listaProgresoLeccion">
+              <!--<div class="row">
                 <div class="col-6 align-self-center">
-                  <span>Funca</span>
+                  
                 </div>
                 <div class="col-6">
                   <div class="input-group spinner">
@@ -295,7 +290,7 @@
                   </div>
                 </div>
               </div>
-              <hr>
+              <hr>-->
             </div>
           </div>
         </div>
@@ -313,6 +308,9 @@
 ?>
 <script type="text/javascript">
   $(function(){
+    //Se carga la lista de usuario
+    cargarUsuarios();
+
     $.ajax({
       url: "acciones",
       type: "POST",
@@ -381,15 +379,6 @@
           alertify.error("Error al cargar las ciudades");
         }
       });
-    });
-
-    var idBoton = 1;
-    cargarUsuarios(idBoton);
-    $(".btn-usu").on("click", function(){
-      $(".btn-usu").removeClass('active');
-      $(this).addClass('active');
-      idBoton = $(this).val();
-      cargarUsuarios(idBoton);
     });
 
     $.ajax({
@@ -483,7 +472,7 @@
               setTimeout(function() {
                 top.$("#cargando").modal("hide");
                 $("#crearUsuario").modal("hide");
-                cargarUsuarios(idBoton);
+                cargarUsuarios();
               }, 1000);
             }else{
               alertify.error(data);
@@ -511,7 +500,7 @@
             if (data == "Ok") {
               $("#modal-editarUsuario").modal("hide");
               $("#formEditarUsuario")[0].reset();
-              cargarUsuarios(1);
+              cargarUsuarios();
               alertify.success("Se ha actualizado el usuario");
             }else{
               alertify.error(data);
@@ -599,18 +588,20 @@
     }
   }
 
-  function cargarUsuarios(id){
+  function cargarUsuarios(){
     $.ajax({
       url: 'acciones',
       type: 'POST',
       dataType: 'html',
-      data: {accion: 'listaUsuario', activo: id},
+      data: {accion: 'listaUsuario'},
       success: function(data){
+        $('[data-toggle="tooltip"]').tooltip('hide');
         $("#tabla").dataTable().fnDestroy();
         $("#contenido_tabla_coordinadores").empty();
         if (data != false) {
           $("#contenido_tabla_coordinadores").html(data);
         }
+        $('[data-toggle="tooltip"]').tooltip();
         definirdataTable('#tabla');
       },
       error: function(){
@@ -619,24 +610,23 @@
     });
   }
 
-  function inHabilitarUsuario(id, activo){
-    $.ajax({
-      url: 'acciones',
-      type: 'POST',
-      dataType: 'html',
-      data: {accion: "inHabilitarUsuario", id: id, activo: activo},
-      success: function(){
-        cargarUsuarios(activo);
-        if (activo == 1) {
-          alertify.success("Usuario habilitado");
-        }else{
-          alertify.warning("Usuario deshabilitado");
-        }
-      },
-      error: function(){
-        alertify.error("No ha podido inhabilitar el usuario");
-      }
-    });
+  function inHabilitarUsuario(id){
+    alertify.confirm('Eliminar usuario', 'Esta seguro se eliminarlo', 
+      function(){ 
+        $.ajax({
+          url: 'acciones',
+          type: 'POST',
+          dataType: 'html',
+          data: {accion: "inHabilitarUsuario", id: id,},
+          success: function(){
+            cargarUsuarios();
+            alertify.success("Usuario deshabilitado");
+          },
+          error: function(){
+            alertify.error("No ha podido inhabilitar el usuario");
+          }
+        }); }
+    , function(){ });
   }
 
   function editarUsuario(id){
@@ -722,52 +712,73 @@
       data: {accion: 'listaCursosUsuarioProgreso', idUsu: idUsu},
       success: function(data){
         $("#listaProgresoCurso").html(data);
-        $("#listaTalleresUnidad").empty();
+        $("#listaProgresoUnidad").empty();
+        $("#listaProgresoLeccion").empty();
         //Activamos el botón al darle click
-        $(".evaluaciones").on("click", function(){
-          $(".evaluaciones").removeClass("active");
+        $(".pro_curso").on("click", function(){
+          $(".pro_curso").removeClass("active");
           $(this).addClass("active");
         });
 
         $("#modal-progresoUsuarios").modal("show");
-        $(".evaluaciones").on("click", function(){
+
+        $(".pro_curso").on("click", function(){
           //Traemos la evaluaciones que ha realizado de ese taller
           $.ajax({
-            url: 'acciones',
-            type: 'POST',
-            dataType: 'html',
-            data: {accion: "talleresRealizados", idUsu: idUsu, idCurso: $(this).val()},
+            url: "acciones",
+            type: "GET",
+            dataType: "html",
+            data: {accion: "listaUnidadesUsuariosProgreso", curso: $(this).val(), idUsu: idUsu},
             success: function(data){
-              $("#listaTalleresUnidad").html(data);
+              $("#listaProgresoUnidad").empty();
+              $("#listaProgresoLeccion").empty();
+              $("#listaProgresoUnidad").html(data);
 
-              //Botones de intentos
-              //$('.count').prop('disabled', true);
-              $(".minus").on("click", function() {
-                var input = $(this).parent().next();
-                if (input.val() > 0) {
-                  input.val(parseInt(input.val()) - 1 );
-                  actualizarIntentoTaller($(this).val(), input.val());    
-                  /*$('.count').val(parseInt($('.count').val()) - 1 );
-                  $('.counter').text(parseInt($('.counter').text()) - 1 );*/
-                }
+              $(".pro_unidad").on("click", function(){
+                $(".pro_unidad").removeClass("active");
+                $(this).addClass("active");
+
+                $.ajax({
+                  url: "acciones",
+                  type: "GET",
+                  dataType: "html",
+                  data: {accion: "listaLeccionesUsuarioProgreso", idUnidad: $(this).val(), idUsu: idUsu},
+                  success: function(data){
+                    $("#listaProgresoLeccion").html(data);
+
+                    //Botones de intentos
+                    //$('.count').prop('disabled', true);
+                    $(".minus").on("click", function() {
+                      var input = $(this).parent().next();
+                      if (input.val() > 0) {
+                        input.val(parseInt(input.val()) - 1 );
+                        actualizarIntentoTaller($(this).val(), input.val());    
+                        /*$('.count').val(parseInt($('.count').val()) - 1 );
+                        $('.counter').text(parseInt($('.counter').text()) - 1 );*/
+                      }
+                    });
+                    $(".plus").on("click", function() {
+                      var input = $(this).parent().prev();
+                      if (input.val() < 30) {
+                        input.val(parseInt(input.val()) + 1 ); 
+                        actualizarIntentoTaller($(this).val(), input.val());       
+                        //$('.count').val(parseInt($('.count').val()) + 1 );
+                        //$('.counter').text(parseInt($('.counter').text()) + 1 );
+                        //console.log($(this).parent().prev().val());
+                      }
+                    });
+                    //Fin botónes de intentos
+                  },
+                  error: function(){
+                    alertify.error("No se han cargado la lecciones");
+                  }
+                });
               });
-              $(".plus").on("click", function() {
-                var input = $(this).parent().prev();
-                if (input.val() < 30) {
-                  input.val(parseInt(input.val()) + 1 ); 
-                  actualizarIntentoTaller($(this).val(), input.val());       
-                  //$('.count').val(parseInt($('.count').val()) + 1 );
-                  //$('.counter').text(parseInt($('.counter').text()) + 1 );
-                  //console.log($(this).parent().prev().val());
-                }
-              });
-              //Fin botónes de intentos
             },
             error: function(){
-             alertify.error("No se ha cargado la lista."); 
+              alertify.error("No se han podido cargar la unidades.");
             }
-          })
-
+          });
         });
       },
       error: function(){
