@@ -92,11 +92,11 @@
     public function bootstrapTempusDominus(){
       $this->cadena_libreria = '
     <!-- ==================== Bootstrap Tempus Dominus ===================== -->
-    <link rel="stylesheet" href="' . $this->ruta_libreria . 'css/tempusdominus-bootstrap-4.min.css"/>
-    <script type="text/javascript" src="' . $this->ruta_libreria . 'js/moment.min.js"></script>
-    <script type="text/javascript" src="' . $this->ruta_libreria . 'js/es.js"></script>
-    <script type="text/javascript" src="' . $this->ruta_libreria . 'js/tempusdominus-bootstrap-4.min.js"></script>
-    <script type="text/javascript" src="' . $this->ruta_libreria . 'js/underscore-min.js"></script>';
+    <link rel="stylesheet" href="' . $this->ruta_libreria . 'tempus-dominus/css/tempusdominus-bootstrap-4.min.css"/>
+    <script type="text/javascript" src="' . $this->ruta_libreria . 'tempus-dominus/js/moment.min.js"></script>
+    <script type="text/javascript" src="' . $this->ruta_libreria . 'tempus-dominus/js/es.js"></script>
+    <script type="text/javascript" src="' . $this->ruta_libreria . 'tempus-dominus/js/tempusdominus-bootstrap-4.min.js"></script>
+    <script type="text/javascript" src="' . $this->ruta_libreria . 'tempus-dominus/js/underscore-min.js"></script>';
     return $this->cadena_libreria;
     }
 
