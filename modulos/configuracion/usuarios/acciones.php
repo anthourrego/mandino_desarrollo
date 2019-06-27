@@ -91,12 +91,18 @@
     $db = new Bd();
     $db->conectar();
     $respuesta = "";
+    $per = 0;
+    $log = 0;
 
     $usuarios = $db->consulta("SELECT * FROM mandino_usuarios INNER JOIN municipios ON m_id = fk_ciudad WHERE u_activo = :u_activo", array(":u_activo" => $_GET['habilitado']));
 
     $db->desconectar();
     
     if ($usuarios['cantidad_registros'] > 0) {
+      if ($permisos->validarPermiso($usuario['id'], "usuarios_logs")) {
+        $log = 1;
+      }
+
       if ($permisos->validarPermiso($usuario['id'], "usuarios_taller_intentos")) {
         $taller_intentos = 1;
       }
@@ -106,7 +112,7 @@
       }
 
       if ($permisos->validarPermiso($usuario['id'], 'usuarios_permisos')) {
-        $permiso = 1;
+        $per = 1;
       }
 
       if ($permisos->validarPermiso($usuario['id'], 'usuarios_cursos')) {
@@ -125,6 +131,10 @@
                         <td class='align-middle'>" . $usuarios[$i]['u_usuario'] . "</td>
                         <td class='align-middle'>" . $usuarios[$i]['u_nombre1'] . " " . $usuarios[$i]['u_nombre2'] . " " . $usuarios[$i]['u_apellido1'] . " " . $usuarios[$i]['u_apellido2'] . "</td>
                         <td class='d-flex justify-content-around'>";
+        if ($log == 1) {
+          $respuesta .= "<button class='btn btn-info' onClick='logUsuarios(". $usuarios[$i]['u_id'] .")' data-toggle='tooltip' title='Logs'><i class='fas fa-list-alt'></i></button>";
+        }
+        
         if ($taller_intentos == 1) {
           $respuesta .= "<button class='btn btn-info' onClick='estadoUsuario(". $usuarios[$i]['u_id'] .")' data-toggle='tooltip' title='Progreso'><i class='far fa-calendar-check'></i></button>";
         }
@@ -133,7 +143,7 @@
           $respuesta .= "<button class='btn btn-success' onClick='editarUsuario(". $usuarios[$i]['u_id'] .")' data-toggle='tooltip' title='Editar'><i class='fas fa-user-edit'></i></button>";
         }
 
-        if ($permiso == 1) {
+        if ($per == 1) {
           $respuesta .= "<button class='btn btn-info' onClick='permisos(". $usuarios[$i]['u_id'] .")' data-toggle='tooltip' title='Permisos'><i class='fas fa-user-shield'></i></button>";
         }
 
@@ -488,6 +498,39 @@
     $db->desconectar();
 
     return json_encode($municipios);
+  }
+
+  function logFecha(){
+    $db = new Bd();
+    $db->conectar();
+
+    $sql = $db->consulta("SELECT DATE_FORMAT(log_fecha_creacion, '%Y') AS fecha FROM log_session WHERE fk_usuario = :idUsu GROUP BY fecha", array(":idUsu" => $_POST['idUsu']));
+
+    $db->desconectar();
+
+    return json_encode($sql);
+  }
+
+  function logMeses(){
+    $db = new Bd();
+    $db->conectar();
+
+    $sql = $db->consulta("SELECT DATE_FORMAT(log_fecha_creacion, '%m') AS mes FROM log_session WHERE fk_usuario = :idUsu GROUP BY mes", array(":idUsu" => $_POST['idUsu']));
+
+    $db->desconectar();
+
+    return json_encode($sql);
+  }
+
+  function logs(){
+    $db = new Bd();
+    $db->conectar();
+
+    $sql = $db->consulta("SELECT * FROM log_session WHERE DATE_FORMAT(log_fecha_creacion, '%Y/%m') = :fecha AND fk_usuario = :idUser", array(":fecha" => $_GET['fecha'], ":idUser" => $_GET['idUsu']));
+
+    $db->desconectar();
+
+    return json_encode($sql);
   }
 
   if(@$_REQUEST['accion']){

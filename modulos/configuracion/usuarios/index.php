@@ -38,6 +38,7 @@
     echo $lib->datatables();
     echo $lib->bsCustomFileInput();
     echo $lib->jqueryValidate();
+    echo $lib->bootstrapTempusDominus();
     echo $lib->alertify();
     echo $lib->bootstrapSelect();
     echo $lib->mandino();
@@ -63,7 +64,7 @@
   <div class="container-fluid mt-4">
     <div class="d-flex justify-content-between mt-3 mb-3">
       <div class="btn-group btn-group-toggle" data-toggle="buttons">
-        <label class="btn btn-secondary active activoUser">
+        <label class="btn btn-secondary bg-primary active activoUser">
           <i class="fas fa-user-check"></i> <input type="radio" class="activoUser" name="options" value="1" autocomplete="off" checked> Activos
         </label>
         <label class="btn btn-secondary activoUser">
@@ -289,6 +290,48 @@
     </div>
   </div>
 
+  <!-- Modal Editar Curso Usuario -->
+  <div class="modal fade" id="modal-logUsuarios" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="crearUsuarioLabel"><i class="fas fa-list-alt"></i> Inicio de Usuario</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-6">
+              <select id="logFecha" class="custom-select">
+              </select>
+            </div>
+            <div class="col-6">
+              <select name="" id="logMeses" disabled class="custom-select">
+                <option value="" disabled selected>Seleccione un mes</option>
+              </select>
+            </div>
+            <div class="col-12 mt-3">
+              <table id="tabla-logs" class="table">
+                <thead>
+                  <tr>
+                    <th>Nro</th>
+                    <th>Día</th>
+                    <th>Hora</th>
+                  </tr>
+                </thead>
+                <tbody id="contenido-logs"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer d-flex justify-content-center">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal"><i class="fas fa-times"></i> Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
 
 </body>
 <?php 
@@ -300,6 +343,8 @@
     cargarUsuarios($("input[name='options']:checked").val());
 
     $(".activoUser").on("click", function(){
+      $(".activoUser").removeClass("bg-primary");
+      $(this).addClass("bg-primary");
       cargarUsuarios($("input", this).val());
     });
 
@@ -795,6 +840,81 @@
       },
       error: function(){
         alertity.error("No se ha actualizado...");
+      }
+    });
+  }
+
+  function logUsuarios(idUsu){
+    $("#modal-logUsuarios").modal("show");
+    tablaLogs(idUsu);
+    $("#logMeses").attr("disabled", true);
+    $("#logMeses").html(`<option value="" selected disabled>Seleccione un mes</option>`);
+
+    $.ajax({
+      url:"acciones",
+      type: "POST",
+      dataType: "json",
+      data: {accion: "logFecha", idUsu: idUsu},
+      success: function(data){
+        $("#logFecha").empty();
+        $("#logFecha").append(`<option value="0" selected disabled>Seleccione una fecha</option>`);
+        for (let i = 0; i < data.cantidad_registros; i++) {
+          $("#logFecha").append(`<option value="${data[i].fecha}">${data[i].fecha}</option>`);
+        }
+
+        $("#logFecha").on("change", function(){
+          $.ajax({
+            url: "acciones",
+            type: "POST",
+            dataType: "json",
+            data: {accion: "logMeses", idUsu: idUsu},
+            success: function(data){
+              $("#logMeses").attr("disabled", false);
+              $("#logMeses").empty();
+              $("#logMeses").append(`<option value="" selected disabled>Seleccione un mes</option>`);
+              for (let i = 0; i < data.cantidad_registros; i++) {
+                $("#logMeses").append(`<option value="${data[i].mes}">${moment.months(data[i].mes - 1)}</option>`);
+              }
+
+              $("#logMeses").on("change", function(){
+                tablaLogs(idUsu, $("#logFecha").val() + "/" + $("#logMeses").val());
+              });
+            },
+            error: function(){
+              alertify.error("Se han cargado los meses");
+            }
+          });
+        });
+
+
+      },
+      error: function(){
+        alertify.erro("No se han cargado los años");
+      }
+    });
+  }
+
+  function tablaLogs(idUsu, fecha = moment().format("YYYY/MM")){
+    $.ajax({
+      url: "acciones",
+      type: "GET",
+      dataType: "json",
+      data: {accion: "logs", idUsu: idUsu, fecha: fecha},
+      success: function(data){
+        $("#tabla-logs").dataTable().fnDestroy();
+        $("#contenido-logs").empty();
+        for (let i = 0; i < data.cantidad_registros; i++) {   
+          console.log(data[i].log_fecha_creacion);                 
+          $("#contenido-logs").append(`<tr>
+                                        <td>${moment(data[i].log_fecha_creacion, "YYYY-MM-DD hh:mm").format("DD")}</td>
+                                        <td>${moment.weekdays(moment(data[i].log_fecha_creacion).day()) }</td>
+                                        <td>${moment(data[i].log_fecha_creacion, "YYYY-MM-DD hh:mm").format("hh:mm a")}</td>
+                                      </tr>`);
+        }
+        definirdataTable('#tabla-logs');
+      },
+      error: function(){
+        alertify.error("Error al cargar los logs.");
       }
     });
   }
