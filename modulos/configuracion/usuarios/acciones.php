@@ -92,7 +92,7 @@
     $db->conectar();
     $respuesta = "";
 
-    $usuarios = $db->consulta("SELECT * FROM mandino_usuarios INNER JOIN municipios ON m_id = fk_ciudad WHERE u_activo = 1");
+    $usuarios = $db->consulta("SELECT * FROM mandino_usuarios INNER JOIN municipios ON m_id = fk_ciudad WHERE u_activo = :u_activo", array(":u_activo" => $_GET['habilitado']));
 
     $db->desconectar();
     
@@ -142,7 +142,12 @@
         }
 
         if ($inhabilitar == 1) {
-          $respuesta .= "<button class='btn btn-danger' onClick='inHabilitarUsuario(" . $usuarios[$i]['u_id'] . ")' data-toggle='tooltip' title='Inhabilitar'><i class='fas fa-user-minus'></i></button>";
+          if ($usuarios[$i]['u_activo'] == 1) {
+            $respuesta .= "<button class='btn btn-danger' onClick='inHabilitarUsuario(" . $usuarios[$i]['u_id'] . ", 0)' data-toggle='tooltip' title='Inhabilitar'><i class='fas fa-user-minus'></i></button>";
+          } else {
+            $respuesta .= "<button class='btn btn-primary' onClick='inHabilitarUsuario(" . $usuarios[$i]['u_id'] . ", 1)' data-toggle='tooltip' title='Habilitar'><i class='fas fa-user-plus'></i></button>";            
+          }
+          
         }
 
         $respuesta .= "</td>
@@ -253,7 +258,7 @@
     $db = new Bd();
     $db->conectar();
 
-    $db->sentencia("UPDATE mandino_usuarios SET u_activo = 0 WHERE u_id = :u_id", array(":u_id" => $_POST['id']));
+    $db->sentencia("UPDATE mandino_usuarios SET u_activo = :u_activo WHERE u_id = :u_id", array(":u_id" => $_POST['id'], ":u_activo" => $_POST['activo']));
 
     $db->desconectar();
   }

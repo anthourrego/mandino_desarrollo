@@ -61,7 +61,15 @@
 	<?php include_once($ruta_raiz . 'navBar.php'); ?>
   <!-- Contenido -->
   <div class="container-fluid mt-4">
-    <div class="d-flex justify-content-end mt-3 mb-3">
+    <div class="d-flex justify-content-between mt-3 mb-3">
+      <div class="btn-group btn-group-toggle" data-toggle="buttons">
+        <label class="btn btn-secondary active activoUser">
+          <i class="fas fa-user-check"></i> <input type="radio" class="activoUser" name="options" value="1" autocomplete="off" checked> Activos
+        </label>
+        <label class="btn btn-secondary activoUser">
+          <i class="fas fa-user-times"></i> <input type="radio" class="activoUser" name="options" value="0" autocomplete="off"> Inactivos
+        </label>
+      </div>
       <?php  
         if ($permisos->validarPermiso($usuario['id'], "usuarios_crear")) {
           echo('<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#crearUsuario"><i class="fas fa-user-plus"></i> Crear</button>');
@@ -270,28 +278,8 @@
             <div class="col-12 col-sm-6 col-lg-4">
               <div class="list-group" id="listaProgresoCurso"></div>
             </div>
-            <div class="col-12 col-sm-6 col-lg-4" id="listaProgresoUnidad">
-
-            </div>
-            <div class="col-12 col-sm-12 col-lg-4" id="listaProgresoLeccion">
-              <!--<div class="row">
-                <div class="col-6 align-self-center">
-                  
-                </div>
-                <div class="col-6">
-                  <div class="input-group spinner">
-                    <div class="input-group-prepend">
-                      <button class="btn text-monospace minus btn-primary" type="button">-</button>
-                    </div>
-                    <input type="number" class="count form-control" disabled="true" min="0" max="30" step="0" value="0">
-                    <div class="input-group-append">
-                      <button class="btn text-monospace plus btn-primary" type="button">+</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <hr>-->
-            </div>
+            <div class="col-12 col-sm-6 col-lg-4" id="listaProgresoUnidad"></div>
+            <div class="col-12 col-sm-12 col-lg-4" id="listaProgresoLeccion"></div>
           </div>
         </div>
         <div class="modal-footer d-flex justify-content-center">
@@ -309,7 +297,11 @@
 <script type="text/javascript">
   $(function(){
     //Se carga la lista de usuario
-    cargarUsuarios();
+    cargarUsuarios($("input[name='options']:checked").val());
+
+    $(".activoUser").on("click", function(){
+      cargarUsuarios($("input", this).val());
+    });
 
     $.ajax({
       url: "acciones",
@@ -472,7 +464,7 @@
               setTimeout(function() {
                 top.$("#cargando").modal("hide");
                 $("#crearUsuario").modal("hide");
-                cargarUsuarios();
+                cargarUsuarios($("input[name='options']:checked").val());
               }, 1000);
             }else{
               alertify.error(data);
@@ -500,7 +492,7 @@
             if (data == "Ok") {
               $("#modal-editarUsuario").modal("hide");
               $("#formEditarUsuario")[0].reset();
-              cargarUsuarios();
+              cargarUsuarios($("input[name='options']:checked").val());
               alertify.success("Se ha actualizado el usuario");
             }else{
               alertify.error(data);
@@ -588,12 +580,12 @@
     }
   }
 
-  function cargarUsuarios(){
+  function cargarUsuarios(id){
     $.ajax({
       url: 'acciones',
-      type: 'POST',
+      type: 'GET',
       dataType: 'html',
-      data: {accion: 'listaUsuario'},
+      data: {accion: 'listaUsuario', habilitado: id},
       success: function(data){
         $('[data-toggle="tooltip"]').tooltip('hide');
         $("#tabla").dataTable().fnDestroy();
@@ -610,23 +602,24 @@
     });
   }
 
-  function inHabilitarUsuario(id){
-    alertify.confirm('Eliminar usuario', 'Esta seguro se eliminarlo', 
-      function(){ 
-        $.ajax({
-          url: 'acciones',
-          type: 'POST',
-          dataType: 'html',
-          data: {accion: "inHabilitarUsuario", id: id,},
-          success: function(){
-            cargarUsuarios();
-            alertify.success("Usuario deshabilitado");
-          },
-          error: function(){
-            alertify.error("No ha podido inhabilitar el usuario");
-          }
-        }); }
-    , function(){ });
+  function inHabilitarUsuario(id, activo){
+    $.ajax({
+      url: 'acciones',
+      type: 'POST',
+      dataType: 'html',
+      data: {accion: "inHabilitarUsuario", id: id, activo: activo},
+      success: function(){
+        cargarUsuarios($("input[name='options']:checked").val());
+        if (activo == 1) {
+          alertify.success("Usuario habilitado");
+        }else{
+          alertify.success("Usuario deshabilitado");
+        }
+      },
+      error: function(){
+        alertify.error("No ha podido inhabilitar el usuario");
+      }
+    });
   }
 
   function editarUsuario(id){
