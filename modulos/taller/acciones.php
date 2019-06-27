@@ -189,7 +189,7 @@
                 $resp = "Ok";
               }
             }else{
-              if (validarUltimaUnidad() == $_POST['unidad']) {
+              if (validarUltimaUnidad($_POST['unidad']) == $_POST['unidad']) {
                 if (actualizarVistoLeccion($usuario['id'], $_POST['leccion']) == 1) {
                   //agregarVistoLeccion($usuario['id'], $siguienteUnidad);
                   $resp = "Ok";
@@ -204,7 +204,7 @@
             $resp = "No funca";
           }
         }else{
-          $resp = "Ok";
+          $resp = "Ok 4";
         }
       }else{
         $resp = "No se ha encontrado las preguntas";
@@ -224,7 +224,7 @@
 
     $sql1 = $db->consulta("SELECT * FROM mandino_unidades WHERE mu_id = :mu_id", array(":mu_id" => $unidad));
 
-    $sql2 = $db->consulta("SELECT * FROM mandino_unidades WHERE mu_orden = :mu_orden", array(":mu_orden" => $sql1[0]['mu_orden'] + 1));
+    $sql2 = $db->consulta("SELECT * FROM mandino_unidades WHERE mu_orden = :mu_orden AND fk_mc = :fk_mc", array(":mu_orden" => $sql1[0]['mu_orden'] + 1, ":fk_mc" => $sql1[0]['fk_mc']));
 
     if ($sql2['cantidad_registros'] > 0) {
       $sql = $db->consulta("SELECT * FROM mandino_lecciones WHERE fk_mu = :fk_mu ORDER BY ml_orden ASC LIMIT 1", array(":fk_mu" => $sql2[0]['mu_id']));
@@ -302,11 +302,13 @@
     return $taller;
   }
 
-  function validarUltimaUnidad(){
+  function validarUltimaUnidad($unidad){
     $db = new Bd();
     $db->conectar();
 
-    $datos = $db->consulta("SELECT mu_id FROM mandino_unidades ORDER BY mu_orden DESC LIMIT 1");
+    $cursoActual = $db->consulta("SELECT * FROM mandino_unidades where mu_id = :mu_id", array(":mu_id" => $_POST['unidad']));
+
+    $datos = $db->consulta("SELECT mu_id FROM mandino_unidades WHERE fk_mc = :fk_mc ORDER BY mu_orden DESC LIMIT 1", array(":fk_mc" => $cursoActual[0]['fk_mc']));
 
     $db->desconectar();
 

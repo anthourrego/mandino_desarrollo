@@ -365,7 +365,7 @@
 
     for ($i=0; $i < $listaUnidades['cantidad_registros']; $i++) { 
       $listaLeccionesXUnidad = $db->consulta("SELECT * FROM mandino_lecciones WHERE fk_mu = :fk_mu", array(":fk_mu" => $listaUnidades[$i]['mu_id']));
-      $listaLeccionesXUnidadVisto = $db->consulta("SELECT * FROM mandino_lecciones_visto AS mlv INNER JOIN mandino_lecciones AS ml ON ml.ml_id = mlv.fk_ml  WHERE mlv.fk_usuario = :fk_usuario AND ml.fk_mu = :fk_mu", array(":fk_mu" => $listaUnidades[$i]['mu_id'], ":fk_usuario" => $_GET['idUsu']));
+      $listaLeccionesXUnidadVisto = $db->consulta("SELECT * FROM mandino_lecciones_visto AS mlv INNER JOIN mandino_lecciones AS ml ON ml.ml_id = mlv.fk_ml  WHERE mlv.fk_usuario = :fk_usuario AND ml.fk_mu = :fk_mu AND (mlv.mlv_taller_aprobo = 0 OR mlv.mlv_taller_aprobo = 2)", array(":fk_mu" => $listaUnidades[$i]['mu_id'], ":fk_usuario" => $_GET['idUsu']));
       
       if ($listaLeccionesXUnidadVisto['cantidad_registros'] > 0) {
         $resp .= '<button type="button" value="' . $listaUnidades[$i]['mu_id'] . '" class="pro_unidad list-group-item list-group-item-action d-flex justify-content-between">' . $listaUnidades[$i]['mu_nombre'] . '<span class="badge badge-primary badge-pill">' . $listaLeccionesXUnidadVisto['cantidad_registros'] . '/' . $listaLeccionesXUnidad['cantidad_registros'] . '<span></button>';
@@ -450,7 +450,7 @@
     $sql_select_cantidadLecciones = $db->consulta("SELECT * FROM mandino_curso INNER JOIN mandino_unidades ON fk_mc = mc_id INNER JOIN mandino_lecciones ON fk_mu = mu_id WHERE mc_id = :mc_id", array(":mc_id" => $curso));
     $cont = $sql_select_cantidadLecciones['cantidad_registros'];
 
-    $sql_select_cantidadLecciones_usuario = $db->consulta("SELECT * FROM mandino_curso INNER JOIN mandino_unidades ON fk_mc = mc_id INNER JOIN mandino_lecciones ON fk_mu = mu_id INNER JOIN mandino_lecciones_visto AS mlv ON mlv.fk_ml = ml_id WHERE mc_id = :mc_id AND mlv.fk_usuario = :fk_usuario", array(":mc_id" => $curso, ":fk_usuario" => $usuario));
+    $sql_select_cantidadLecciones_usuario = $db->consulta("SELECT * FROM mandino_curso INNER JOIN mandino_unidades ON fk_mc = mc_id INNER JOIN mandino_lecciones ON fk_mu = mu_id INNER JOIN mandino_lecciones_visto AS mlv ON mlv.fk_ml = ml_id WHERE mc_id = :mc_id AND mlv.fk_usuario = :fk_usuario AND (mlv.mlv_taller_aprobo = 0 OR mlv.mlv_taller_aprobo = 2)", array(":mc_id" => $curso, ":fk_usuario" => $usuario));
 
     $contUsu = $sql_select_cantidadLecciones_usuario['cantidad_registros'];
 
