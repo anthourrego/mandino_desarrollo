@@ -1,3 +1,39 @@
+$.ajax({
+  url: 'acciones',
+  type: 'POST',
+  dataType: 'html',
+  data: {accion: "talleresRealizados", idUsu: idUsu, idCurso: $(this).val()},
+  success: function(data){
+    $("#listaTalleresUnidad").html(data);
+
+    //Botones de intentos
+    //$('.count').prop('disabled', true);
+    $(".minus").on("click", function() {
+      var input = $(this).parent().next();
+      if (input.val() > 0) {
+        input.val(parseInt(input.val()) - 1 );
+        actualizarIntentoTaller($(this).val(), input.val());    
+        /*$('.count').val(parseInt($('.count').val()) - 1 );
+        $('.counter').text(parseInt($('.counter').text()) - 1 );*/
+      }
+    });
+    $(".plus").on("click", function() {
+      var input = $(this).parent().prev();
+      if (input.val() < 30) {
+        input.val(parseInt(input.val()) + 1 ); 
+        actualizarIntentoTaller($(this).val(), input.val());       
+        //$('.count').val(parseInt($('.count').val()) + 1 );
+        //$('.counter').text(parseInt($('.counter').text()) + 1 );
+        //console.log($(this).parent().prev().val());
+      }
+    });
+    //Fin botónes de intentos
+  },
+  error: function(){
+    alertify.error("No se ha cargado la lista."); 
+  }
+})
+
 <?php  
 	$max_salida=10; // Previene algun posible ciclo infinito limitando a 10 los ../
   $ruta_raiz=$ruta="";
