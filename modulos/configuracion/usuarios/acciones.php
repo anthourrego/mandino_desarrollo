@@ -504,7 +504,7 @@
     $db = new Bd();
     $db->conectar();
 
-    $sql = $db->consulta("SELECT DATE_FORMAT(log_fecha_creacion, '%Y') AS fecha FROM log_session WHERE fk_usuario = :idUsu GROUP BY fecha", array(":idUsu" => $_POST['idUsu']));
+    $sql = $db->consulta("SELECT YEAR(log_fecha_creacion) AS fecha FROM log_session WHERE fk_usuario = :idUsu GROUP BY fecha", array(":idUsu" => $_POST['idUsu']));
 
     $db->desconectar();
 
@@ -515,7 +515,7 @@
     $db = new Bd();
     $db->conectar();
 
-    $sql = $db->consulta("SELECT DATE_FORMAT(log_fecha_creacion, '%m') AS mes FROM log_session WHERE fk_usuario = :idUsu GROUP BY mes", array(":idUsu" => $_POST['idUsu']));
+    $sql = $db->consulta("SELECT MONTH(log_fecha_creacion) AS mes FROM log_session WHERE YEAR(log_fecha_creacion) = :year AND  fk_usuario = :idUsu GROUP BY mes", array(":idUsu" => $_POST['idUsu'], ":year" => $_POST['year']));
 
     $db->desconectar();
 
@@ -526,7 +526,7 @@
     $db = new Bd();
     $db->conectar();
 
-    $sql = $db->consulta("SELECT * FROM log_session WHERE DATE_FORMAT(log_fecha_creacion, '%Y/%m') = :fecha AND fk_usuario = :idUser", array(":fecha" => $_GET['fecha'], ":idUser" => $_GET['idUsu']));
+    $sql = $db->consulta("SELECT * FROM log_session WHERE YEAR(log_fecha_creacion) = :year AND MONTH(log_fecha_creacion) = :mes  AND fk_usuario = :idUser", array(":year" => $_GET['year'], ":mes" => $_GET['mes'], ":idUser" => $_GET['idUsu']));
 
     $db->desconectar();
 

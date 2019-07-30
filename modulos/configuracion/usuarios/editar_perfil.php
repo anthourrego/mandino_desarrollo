@@ -23,6 +23,7 @@
   $db = new Bd();
   $db->conectar();
   $tema = "";
+  $certificados = "";
 
   $sql_tema = $db->consulta("SELECT * FROM mandino_temas ORDER BY mt_id ASC");
 
@@ -52,6 +53,46 @@
     }
   }
 
+  //Certificados
+  //Certificado de seguridad y salud en el trabajo
+  $sql_leccionesCant = $db->consulta("SELECT * FROM mandino_lecciones WHERE fk_mu = 3");
+
+  $sql_leccionesCantVisto = $db->consulta("SELECT * FROM mandino_lecciones AS ml INNER JOIN mandino_lecciones_visto AS mlv ON ml.ml_id = mlv.fk_ml WHERE mlv.fk_usuario = :usuario AND  ml.fk_mu = 3 AND (mlv.mlv_taller_aprobo = 0 OR mlv.mlv_taller_aprobo = 2)", array(":usuario" => $usuario['id']));
+
+  if ($sql_leccionesCant['cantidad_registros'] == $sql_leccionesCantVisto['cantidad_registros'] AND $sql_leccionesCant['cantidad_registros'] != 0) {
+    $certificados .= '<div class="row">
+                        <div class="col-7">
+                          Seguridad y salud
+                        </div>
+                        <div class="col-5">
+                          <a class="btn btn-success" href="' . $ruta_raiz .'certificados/certificados_seguridadysalud.php" target="_blank"><i class="fas fa-eye"></i></a>
+                          <a class="btn btn-primary" href="' . $ruta_raiz .'certificados/certificados_seguridadysalud.php" download="Certificado.pdf"><i class="fas fa-download"></i></a>
+                        </div>
+                      </div><hr>';
+  }
+  //curso completo
+  $sql_cursos = $db->consulta("SELECT * FROM mandino_curso");
+
+  for ($i=0; $i < $sql_cursos['cantidad_registros']; $i++) { 
+    $sql_select_cantidadLecciones = $db->consulta("SELECT * FROM mandino_curso INNER JOIN mandino_unidades ON fk_mc = mc_id INNER JOIN mandino_lecciones ON fk_mu = mu_id WHERE mc_id = :mc_id", array(":mc_id" => $sql_cursos[$i]['mc_id']));
+
+    $sql_select_cantidadLecciones_usuario = $db->consulta("SELECT * FROM mandino_curso INNER JOIN mandino_unidades ON fk_mc = mc_id INNER JOIN mandino_lecciones ON fk_mu = mu_id INNER JOIN mandino_lecciones_visto AS mlv ON mlv.fk_ml = ml_id WHERE mc_id = :mc_id AND mlv.fk_usuario = :fk_usuario AND (mlv.mlv_taller_aprobo = 0 OR mlv.mlv_taller_aprobo = 2)", array(":mc_id" => $sql_cursos[$i]['mc_id'], ":fk_usuario" => $usuario['id']));
+
+    if ($sql_select_cantidadLecciones['cantidad_registros'] == $sql_select_cantidadLecciones_usuario['cantidad_registros'] AND $sql_select_cantidadLecciones['cantidad_registros'] != 0) {
+      $certificados .= '<div class="row">
+                        <div class="col-7">
+                          ' . $sql_cursos[$i]['mc_nombre'] . '
+                        </div>
+                        <div class="col-5">
+                          <a class="btn btn-success" href="' . $ruta_raiz .'certificados/certificados_cursos.php?curso=' . $sql_cursos[$i]['mc_nombre'] . '" target="_blank"><i class="fas fa-eye"></i></a>
+                          <a class="btn btn-primary" href="' . $ruta_raiz .'certificados/certificados_cursos.php?curso=' . $sql_cursos[$i]['mc_nombre'] . '" download="Certificado ' . $sql_cursos[$i]['mc_nombre'] . '.pdf"><i class="fas fa-download"></i></a>
+                        </div>
+                      </div><hr>';
+    }
+  }
+
+
+
   $db->desconectar();
 
 ?>
@@ -79,6 +120,7 @@
           <a class="list-group-item list-group-item-action active" id="list-home-list" data-toggle="list" href="#pefil" role="tab" aria-controls="home">Perfil</a>
           <a class="list-group-item list-group-item-action" id="list-profile-list" data-toggle="list" href="#cambio-password" role="tab" aria-controls="profile">Cambiar Contraseña</a>
           <a class="list-group-item list-group-item-action" id="list-messages-list" data-toggle="list" href="#temas" role="tab" aria-controls="messages">Temas</a>
+          <a class="list-group-item list-group-item-action" id="list-messages-list" data-toggle="list" href="#certificados" role="tab" aria-controls="messages">Certificados</a>
         </div>
       </div>
       <div class="col-7">
@@ -168,6 +210,9 @@
                 <button class="btn btn-success" type="submit"><i class="far fa-save"></i> Guardar</button>
               </div>
             </form>
+          </div>
+          <div class="tab-pane fade" id="certificados" role="tabpanel" aria-labelledby="list-messages-list">
+            <?php echo($certificados); ?>
           </div>
         </div>
       </div>

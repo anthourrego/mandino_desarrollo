@@ -301,6 +301,7 @@
           </button>
         </div>
         <div class="modal-body">
+          <input type="hidden" id="usuarioLog">
           <div class="row">
             <div class="col-6">
               <select id="logFecha" class="custom-select">
@@ -355,6 +356,7 @@
       cache: false,
       data: {accion: "departamentos"},
       success: function(data){
+
         for (let i = 0; i < data.cantidad_registros; i++) {
           $("#departamentos").append(`
             <option value="${data[i].d_id}">${data[i].d_nombre}</option>
@@ -613,6 +615,34 @@
     $("#foto").change(function () {
       filePreview(this);
     });
+
+
+    //Cambio de fecha en logs de usuario
+    $("#logFecha").on("change", function(){
+      $.ajax({
+        url: "acciones",
+        type: "POST",
+        dataType: "json",
+        data: {accion: "logMeses", idUsu: $("#usuarioLog").val(), year: $("#logFecha").val()},
+        success: function(data){
+          $("#logMeses").attr("disabled", false);
+          $("#logMeses").empty();
+          $("#logMeses").append(`<option value="" selected disabled>Seleccione un mes</option>`);
+          for (let i = 0; i < data.cantidad_registros; i++) {
+            $("#logMeses").append(`<option value="${data[i].mes}">${moment.months(data[i].mes - 1)}</option>`);
+          }
+        },
+        error: function(){
+          alertify.error("Se han cargado los meses");
+        }
+      });
+    });
+
+    $("#logMeses").on("change", function(){ 
+      tablaLogs($("#usuarioLog").val(), $("#logFecha").val(), $("#logMeses").val());
+    });
+
+    //Fin Cambio de fecha en logs de usuario
   });
 
   function filePreview(input) {
@@ -844,9 +874,10 @@
     });
   }
 
-  function logUsuarios(idUsu){
+  function logUsuarios(idUsuario){
     $("#modal-logUsuarios").modal("show");
-    tablaLogs(idUsu);
+    $("#usuarioLog").val(idUsuario);
+    tablaLogs(idUsuario);
     $("#logMeses").attr("disabled", true);
     $("#logMeses").html(`<option value="" selected disabled>Seleccione un mes</option>`);
 
@@ -854,39 +885,13 @@
       url:"acciones",
       type: "POST",
       dataType: "json",
-      data: {accion: "logFecha", idUsu: idUsu},
+      data: {accion: "logFecha", idUsu: idUsuario},
       success: function(data){
         $("#logFecha").empty();
         $("#logFecha").append(`<option value="0" selected disabled>Seleccione una fecha</option>`);
         for (let i = 0; i < data.cantidad_registros; i++) {
           $("#logFecha").append(`<option value="${data[i].fecha}">${data[i].fecha}</option>`);
         }
-
-        $("#logFecha").on("change", function(){
-          $.ajax({
-            url: "acciones",
-            type: "POST",
-            dataType: "json",
-            data: {accion: "logMeses", idUsu: idUsu},
-            success: function(data){
-              $("#logMeses").attr("disabled", false);
-              $("#logMeses").empty();
-              $("#logMeses").append(`<option value="" selected disabled>Seleccione un mes</option>`);
-              for (let i = 0; i < data.cantidad_registros; i++) {
-                $("#logMeses").append(`<option value="${data[i].mes}">${moment.months(data[i].mes - 1)}</option>`);
-              }
-
-              $("#logMeses").on("change", function(){
-                tablaLogs(idUsu, $("#logFecha").val() + "/" + $("#logMeses").val());
-              });
-            },
-            error: function(){
-              alertify.error("Se han cargado los meses");
-            }
-          });
-        });
-
-
       },
       error: function(){
         alertify.erro("No se han cargado los años");
@@ -894,17 +899,18 @@
     });
   }
 
-  function tablaLogs(idUsu, fecha = moment().format("YYYY/MM")){
+  function tablaLogs(idUsuario, year = moment().format("YYYY"), mes = moment().format("MM")){
+    //console.log(fecha);
     $.ajax({
       url: "acciones",
       type: "GET",
       dataType: "json",
-      data: {accion: "logs", idUsu: idUsu, fecha: fecha},
+      data: {accion: "logs", idUsu: idUsuario, year: year, mes: mes},
       success: function(data){
         $("#tabla-logs").dataTable().fnDestroy();
         $("#contenido-logs").empty();
         for (let i = 0; i < data.cantidad_registros; i++) {   
-          console.log(data[i].log_fecha_creacion);                 
+          //console.log(data[i].log_fecha_creacion);                 
           $("#contenido-logs").append(`<tr>
                                         <td>${moment(data[i].log_fecha_creacion, "YYYY-MM-DD hh:mm").format("DD")}</td>
                                         <td>${moment.weekdays(moment(data[i].log_fecha_creacion).day()) }</td>
