@@ -35,7 +35,7 @@
 	<?php include_once($ruta_raiz . 'navBar.php'); ?>
   <!-- Contenido -->
   <div class="container mt-4" >
-		<h1 class="titulo text-hyundai text-center text-lg-left">¡Ya estas cerca de tu objetivo!</h1>
+		<h1 class="titulo text-hyundai text-center text-lg-left">¡Ya estás cerca de tu objetivo!</h1>
     <div id="cursos" class="row mt-2"></div>
   </div>
 
