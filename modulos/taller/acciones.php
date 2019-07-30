@@ -204,7 +204,7 @@
             $resp = "No funca";
           }
         }else{
-          $resp = "Ok 4";
+          $resp = "Ok";
         }
       }else{
         $resp = "No se ha encontrado las preguntas";
