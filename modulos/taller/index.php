@@ -45,7 +45,7 @@
       
     </div>
     <div class="text-center">
-      <input class="btn btn-success rounded-pill" type="submit" name="enviar" id="enviarTaller" value="Finalizar">
+      <button class="btn btn-success rounded-pill" type="submit" name="enviar" id="enviarTaller"><i class="fas fa-paper-plane"></i> Finalizar</button>
     </div>
   </form>
 </div>
@@ -97,6 +97,8 @@
     });
 
     $("#tallerAprendizaje").submit(function(event){
+      top.$("#cargando").modal("show");
+      $("#enviarTaller").attr("disabled", true);
       event.preventDefault();
       $.ajax({
         type: "POST",
@@ -117,6 +119,10 @@
         },
         error: function(){
           alertify.error("No se ha podido enviar el formulario");
+        },
+        complete: function(){
+          $("#enviarTaller").attr("disabled", false);
+          top.$("#cargando").modal("hide");
         }
       });
     });
