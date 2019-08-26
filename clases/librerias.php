@@ -44,7 +44,8 @@
 
     public function jquery(){
       $this->cadena_libreria = '
-  <script type="text/javascript" src="'. $this->ruta_libreria .'jquery/jquery-3.3.1.min.js"></script><script type="text/javascript"></script>';
+  <script type="text/javascript" src="'. $this->ruta_libreria .'jquery/jquery-3.3.1.min.js"></script><script type="text/javascript"></script>
+  <script type="text/javascript" src="'. $this->ruta_libreria .'jquery/timer.jquery.min.js"></script><script type="text/javascript"></script>';
       return($this->cadena_libreria);
     }
 
