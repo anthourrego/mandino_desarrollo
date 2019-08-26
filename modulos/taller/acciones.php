@@ -71,6 +71,8 @@
     $contenidoTabla = '';
     $aprobo = '';
     $cont = 0;
+    $ultimaHora = 0;
+    $contAprobado = 0;
     //Hacemos la conexion con la base de datos
     $db = new Bd();
     $db->conectar();
@@ -81,46 +83,99 @@
     if ($sql_mtu['cantidad_registros'] > 0) {
       for ($i=0; $i <$sql_mtu['cantidad_registros']; $i++) { 
         $cont++;
-        /*
-        if ($fila_mtu['mtu_aprobo'] == 1) {
-          $aprobo = "Aprobó";
-        }else if ($fila_mtu['mtu_aprobo'] == 2) {
-          $aprobo = "Reprobado";
-        }else{
-          $aprobo = "Algo anda mal";
-        }*/
+        
+        
         $horaInicio = new DateTime($sql_mtu[$i]['mtu_fecha_inicio']);
         $horaTermino = new DateTime($sql_mtu[$i]['mtu_fecha_final']);
-
+        
         $interval = $horaInicio->diff($horaTermino);
-
+        
         $porcentaje = ($sql_mtu[$i]['mtu_preguntas_correctas'] * 100)/$sql_mtu[$i]['mtu_preguntas_totales'];
+        
+        //Validamos el si aprobo segun el porcentaje
+        if ($porcentaje >= 70) {
+          $contAprobado++;
+          $aprobo = "alert-success";
+        }else{
+          $aprobo = "alert-danger";
+        }
 
-        $contenidoTabla .= '<tr>';
+        $contenidoTabla .= '<tr class="' . $aprobo . '">';
         $contenidoTabla .= '<td>' . $cont . '</td>';
         $contenidoTabla .= '<td>' . $sql_mtu[$i]['mtu_preguntas_correctas'] . '/' . $sql_mtu[$i]['mtu_preguntas_totales'] . '</td>';
         //$contenidoTabla .= '<td>' . round($porcentaje) . '%</td>';
-        $contenidoTabla .= '<td>' . $interval->format('%H horas %i minutos %s seconds') . '</td>';
+        $contenidoTabla .= '<td>' . $interval->format('%H horas %i minutos %s segundos') . '</td>';    
         //$contenidoTabla .= '<td><button class="btn btn-info" onclick="revisionTaller(' . $sql_mtu[$i]['mtu_id'] . ')"><i class="fas fa-tasks"></i> Revisión</button></td>';
         $contenidoTabla .= '</tr>';
+        
+        $ultimaHora = $sql_mtu[$i]['mtu_fecha_final'];
       }
     }else{
       $contenidoTabla .= '<tr><td colspan="4">No se han encontrado registros</td></tr>';
     }
 
+    $ultimaHora = date("Y-m-d H:i:s", strtotime('+24 hour', strtotime($ultimaHora)));
+
     //Validamos si tiene oportunidades adicionales
     $intentos_adicionles = $db->consulta("SELECT mlv_taller_intento_adicional FROM mandino_lecciones_visto WHERE fk_usuario = :fk_usuario AND fk_ml = :fk_ml", array(":fk_usuario" => $_REQUEST['usu'], ":fk_ml" => $_REQUEST['less']));
 
-    if ($sql_mtu['cantidad_registros'] >= ($intentos_adicionles[0]['mlv_taller_intento_adicional'] + 3)) {
-      $contenidoTabla .= '<script type="text/javascript">
-                            $(function(){
-                              $("#btn-realizar-examen").hide();
-                            });
-                          </script>';
+    if ($contAprobado <= 0) {
+      if ($sql_mtu['cantidad_registros'] < ($intentos_adicionles[0]['mlv_taller_intento_adicional'] + 5)) {
+        
+        $contenidoTabla .= '<script type="text/javascript">
+                              $(function(){
+                                $("#btn-realizar-examen").removeClass("d-none");
+                              });
+                            </script>';
+
+      }else if(date("Y-m-d H:i:s") > $ultimaHora){
+        
+        $db->sentencia("UPDATE mandino_lecciones_visto SET mlv_taller_intento_adicional = :inteto WHERE fk_usuario = :fk_usuario AND fk_ml = :fk_ml", array(":inteto" => ($intentos_adicionles[0]['mlv_taller_intento_adicional'] + 1), ":fk_usuario" =>  $_REQUEST['usu'], ":fk_ml" => $_REQUEST['less']));
+        
+        $contenidoTabla .= '<script type="text/javascript">
+                              $(function(){
+                                $("#btn-realizar-examen").removeClass("d-none");
+                              });
+                            </script>';
+      }else{
+        
+        $tiempoInicio = new DateTime($ultimaHora);
+        $tiempo = $tiempoInicio->diff(new DateTime());
+
+        $contenidoTabla .= '<tr id="tiempo"><td colspan="4">Se desbloqueará en: <strong id="timerDiv">00:00:00</strong> </td></tr>';
+
+        $contenidoTabla .= '<script type="text/javascript">
+                              $(function(){
+                                $("#alerta-tiempo").removeClass("d-none");
+                                $("#timerDiv").timer("remove");
+                                $("#timerDiv").timer({
+                                  countdown: true,
+                                  duration: "' . $tiempo->format('%Hh %im %ss') . '",
+                                  callback: function() {  
+                                    $("#btn-realizar-examen").removeClass("d-none");
+                                    $("#tiempo").remove();
+                                    agregarIntento(' . $intentos_adicionles[0]['mlv_taller_intento_adicional'] . ');
+                                  },     
+                                  format: "%H:%M:%S"  
+                                });
+                              });
+                            </script>';
+      }
     }
 
     $db->desconectar();
     return $contenidoTabla;
+  }
+
+  function agregarIntento(){
+    $db = new Bd();
+    $db->conectar();
+
+    $db->sentencia("UPDATE mandino_lecciones_visto SET mlv_taller_intento_adicional = :inteto WHERE fk_usuario = :fk_usuario AND fk_ml = :fk_ml", array(":inteto" => ($_REQUEST['intento'] + 1), ":fk_usuario" =>  $_REQUEST['usu'], ":fk_ml" => $_REQUEST['less']));
+    
+    $db->desconectar();
+
+    return json_encode(1);
   }
 
   function resolverTaller(){

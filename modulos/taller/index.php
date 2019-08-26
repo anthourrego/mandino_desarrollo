@@ -21,6 +21,12 @@
 ?>
 
 <div id="tabla-inicio">
+  <div id="alerta-tiempo" class="alert alert-warning alert-dismissible fade show d-none" role="alert">
+    Estimado usuario va a dar inicio a un nuevo taller recuerde que la plataforma le otorga <strong>5</strong> oportunidades para realizarlo. De lo contrario tendrá <strong>una (1)</strong> oportunidad más después de <strong>24 horas</strong>.
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
   <table class="text-center table table-hover">
     <thead class="thead-dark">
       <tr>
@@ -35,7 +41,7 @@
     </tbody>
   </table>
   <div class="text-center">
-    <button id="btn-realizar-examen" class="btn btn-primary rounded-pill"><i class="fas fa-file-signature"></i> Realizar Taller</button>
+    <button id="btn-realizar-examen" class="btn btn-primary rounded-pill d-none"><i class="fas fa-file-signature"></i> Realizar Taller</button>
   </div>
 </div>
 
@@ -161,6 +167,25 @@
       },
       error: function(){
         alertify.error("Error al traer la lista");
+      }
+    });
+  }
+
+
+  function agregarIntento(inteto){
+    $.ajax({
+      type: "POST",
+      url: "<?php echo($ruta_raiz) ?>modulos/taller/acciones",
+      data: {accion: "agregarIntento", intento: inteto, usu: <?php echo($usuario['id']); ?>, less: <?php echo($_GET['less']); ?>},
+      success: function(data){
+        if (data == 1) {
+          alertify.success("Se ha agregado el intento.");
+        } else {
+          alertify.error("No ha podido agregar el intento.");
+        }
+      },
+      error: function(){
+        alertify.error("No ha agregado");
       }
     });
   }
