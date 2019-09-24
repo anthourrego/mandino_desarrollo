@@ -105,11 +105,26 @@
 			}
 		});	
 
-    <?php 
-      if (@!$_REQUEST['id_usuario']) {
-        echo('$("#modalFelicitaciones").modal("show");');	
-      }
-    ?>
+    $.ajax({
+      url: '<?php echo($ruta_raiz); ?>modulos/configuracion/empresas/acciones',
+			type: 'POST',
+			dataType: 'json',
+			data: {accion: "empresasUsuario", id_usu: <?php echo($id_usuario); ?>},
+			success: function(datos){
+				for (let i = 0; i < datos.cantidad_registros; i++) { 
+          if (datos[i].fk_empresa == 1) {
+            <?php 
+              if (@!$_REQUEST['id_usuario']) {
+                echo('$("#modalFelicitaciones").modal("show");');	
+              }
+            ?>
+          }
+        }
+			},
+			error: function(){
+				alertify.error("Error al cargar");
+			}
+    });
 	});
 
   function mostrarInfo(val){

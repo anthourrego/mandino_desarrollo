@@ -168,6 +168,17 @@
     return 1;
   }
 
+  function empresasUsuario(){
+    $db = new Bd();
+    $db->conectar();
+
+    $usuarioEmpresas = $db->consulta("SELECT * FROM empresas_usuarios WHERE fk_usuario = :fk_usuario", array(":fk_usuario" => $_REQUEST['id_usu']));
+
+    $db->desconectar();
+
+    return json_encode($usuarioEmpresas);
+  }
+
   if(@$_REQUEST['accion']){
     if(function_exists($_REQUEST['accion'])){
       echo($_REQUEST['accion']());
