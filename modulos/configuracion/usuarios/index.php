@@ -97,7 +97,7 @@
     <div class="modal-dialog modal-lg" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="crearUsuarioLabel"><i class="fas fa-user-plus"></i> Crear Usuario</h5>
+          <h5 class="modal-title"><i class="fas fa-user-plus"></i> Crear Usuario</h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
@@ -155,13 +155,16 @@
               </div>
               <div class="form-group col-6">
                 <label for="">Ciudades <span class="text-danger">*</span></label>
-                <select class="selectpicker form-control" required id="ciudades" name="ciudades" data-live-search="true" data-size="5" title="Seleccione una ciudad"></select>
+                <select class="selectpicker form-control" required disabled id="ciudades" name="ciudades" data-live-search="true" data-size="5" title="Seleccione una ciudad"></select>
               </div>
-              <div class="col-12 text-center">
-                <hr>
-                <h5>Cursos</h5>
+              <div class="form-group col-6">
+                <label for="">Empresas <span class="text-danger">*</span></label>
+                <select class="selectpicker form-control" required id="empresas" name="empresas[]" data-live-search="true" data-size="5" title="Seleccione una empresa" multiple data-selected-text-format="count > 3"></select>
               </div>
-              <div class="col-12" id="listaCursos"></div>
+              <div class="form-group col-6">
+                <label>Cursos <span class="text-danger">*</span></label>
+                <select class="selectpicker form-control" required id="cursos" name="cursos[]" disabled data-live-search="true" data-size="5" title="Seleccione un curso" multiple data-selected-text-format="count > 3"></select>
+              </div>
             </div>
           </div>
           <div class="modal-footer justify-content-center">
@@ -178,7 +181,7 @@
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="crearUsuarioLabel"><i class="fas fa-user-edit"></i> Editar Usuario</h5>
+          <h5 class="modal-title"><i class="fas fa-user-edit"></i> Editar Usuario</h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
@@ -228,6 +231,10 @@
                 <label for="">Ciudades <span class="text-danger">*</span></label>
                 <select class="selectpicker form-control" required id="editciudades" name="editciudades" data-live-search="true" data-size="5" title="Seleccione una ciudad"></select>
               </div>
+              <div class="form-group col-12 col-md-6">
+                <label for="">Empresas <span class="text-danger">*</span></label>
+                <select class="selectpicker form-control" multiple data-selected-text-format="count > 3" required id="editEmpresas" name="editEmpresas[]" data-live-search="true" data-size="5" title="Seleccione una empresa"></select>
+              </div>
             </div>
           </div>
           <div class="modal-footer d-flex justify-content-center">
@@ -243,7 +250,7 @@
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="crearUsuarioLabel"><i class="fas fa-book"></i> Cursos - Usuarios</h5>
+          <h5 class="modal-title"><i class="fas fa-book"></i> Cursos - Usuarios</h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
@@ -269,7 +276,7 @@
     <div class="modal-dialog modal-xl">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="crearUsuarioLabel"><i class="fas fa-book"></i> Progreso - Usuarios</h5>
+          <h5 class="modal-title"><i class="fas fa-book"></i> Progreso - Usuarios</h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
@@ -295,7 +302,7 @@
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="crearUsuarioLabel"><i class="fas fa-list-alt"></i> Inicio de Usuario</h5>
+          <h5 class="modal-title"><i class="fas fa-list-alt"></i> Inicio de Usuario</h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
@@ -333,6 +340,20 @@
     </div>
   </div>
 
+  <div class="modal fade bd-example-modal-xl" id="verUsuario" tabindex="-1" role="dialog" aria-labelledby="myExtraLargeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <iframe id="contenido-verUsuario" name="contenido-verUsuario" class="w-100" style="height: 75vh" frameborder="0"></iframe>
+      </div>
+    </div>
+  </div>
+
+
 
 </body>
 <?php 
@@ -347,6 +368,56 @@
       $(".activoUser").removeClass("bg-primary");
       $(this).addClass("bg-primary");
       cargarUsuarios($("input", this).val());
+    });
+
+    //Se carga la lista de empresas
+    $.ajax({
+      url: '<?php echo($ruta_raiz) ?>modulos/configuracion/empresas/acciones',
+      type: "POST",
+      dataType: "json",
+      cache: false,
+      data: {accion: "listaEmpresas"},
+      success: function(data){
+        for (let i = 0; i < data.cantidad_registros; i++) {
+          $("#empresas").append(`
+            <option value="${data[i].e_id}">${data[i].e_nombre}</option>
+          `);
+        }
+        $("#empresas").selectpicker('refresh');
+      },
+      error: function(){
+        alertify.error("No se ha cargado la lista de empresas.");
+      }
+    });
+
+    //Caundo selecciones la empresas se habilitan los cursos
+    $("#empresas").on("change", function(){
+      //Validamos si el campo esta lleno
+      if($(this).val() != ""){
+        $("#cursos").attr("disabled", false);
+        $.ajax({
+          url: '<?php echo($ruta_raiz) ?>modulos/configuracion/cursos/acciones',
+          type: 'POST',
+          dataType: 'json',
+          data: {accion: 'CursosXEmpresa', empresas: $(this).val()},
+          success: function(data){
+            $("#cursos").empty();
+            for (let i = 0; i < data.cantidad_registros; i++) {
+              $("#cursos").append(`
+                <option value="${data[i].mc_id}">${data[i].mc_nombre}</option>
+              `);
+            }
+            $("#cursos").selectpicker('refresh');
+          },
+          error: function(){
+            alertify.error("No han cargado los cursos");
+          }
+        });
+      }else{
+        $("#cursos").empty();
+        $("#cursos").attr("disabled", true);
+        $("#cursos").selectpicker('refresh');
+      }
     });
 
     $.ajax({
@@ -382,6 +453,7 @@
         cache: false,
         data: {accion: "ciudades", dep: $(this).val()},
         success: function(data){
+          $("#ciudades").attr("disabled", false);
           $("#ciudades").empty();
           for (let i = 0; i < data.cantidad_registros; i++) {
             $("#ciudades").append(`
@@ -418,21 +490,6 @@
           alertify.error("Error al cargar las ciudades");
         }
       });
-    });
-
-    $.ajax({
-      url: '<?php echo($ruta_raiz) ?>modulos/configuracion/cursos/acciones',
-      type: 'POST',
-      dataType: 'json',
-      data: {accion: 'ListaCursos1'},
-      success: function(data){
-        for (var i = 0; i < data.cantidad_registros; i++) {
-          $("#listaCursos").append('<div class="custom-control custom-checkbox custom-control-inline"><input type="checkbox" name="cursos[]" class="custom-control-input" value="' + data[i].mc_id + '" id="cursos' + data[i].mc_id + '"><label class="custom-control-label" for="cursos' + data[i].mc_id + '">' + data[i].mc_nombre + '</label></div>');
-        }
-      },
-      error: function(){
-        alertify.error("No han cargado los cursos");
-      }
     });
 
     $("#formCrearUsuario").validate({
@@ -713,6 +770,7 @@
         $("#editApellido2").val(data.u_apellido2);
         $("#editCorreo").val(data.u_correo);
         $("#editTelefono").val(data.u_telefono);
+
         $.ajax({
           url: "acciones",
           type: "POST",
@@ -736,6 +794,32 @@
           },
           error: function(){
             alertify.error("No se han cargado la ciudades");
+          }
+        });
+
+        $.ajax({
+          url: "acciones",
+          type: "POST",
+          dataType: "json",
+          cache: false,
+          data: {accion: "UsuariosEmpresas", idUsuario: data.u_id},
+          success: function(data){
+            $("#editEmpresas").empty();
+            for (let i = 0; i < data.cantidad_registros; i++) {
+              if (data[i].check) {
+                $("#editEmpresas").append(`
+                  <option selected value="${data[i].e_id}">${data[i].e_nombre}</option>
+                `);
+              } else {  
+                $("#editEmpresas").append(`
+                  <option value="${data[i].e_id}">${data[i].e_nombre}</option>
+                `);
+              }
+            }
+            $("#editEmpresas").selectpicker('refresh');
+          },
+          error: function(){
+            alertify.error("Error al cargar la empresas.");
           }
         });
 
@@ -923,6 +1007,12 @@
         alertify.error("Error al cargar los logs.");
       }
     });
+  }
+
+  function verUsuario(id){
+    $("#contenido-verUsuario").attr("src", "<?php echo($ruta_raiz) ?>modulos/cursos/cursos?id_usuario="+id);
+    $("#verUsuario").modal("show");
+    //window.location.href = "<?php echo($ruta_raiz) ?>modulos/cursos/cursos?id_usuario="+id;
   }
     
 </script>

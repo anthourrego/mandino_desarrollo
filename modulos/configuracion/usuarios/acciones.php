@@ -130,7 +130,7 @@
                         <td class='align-middle'>" . $usuarios[$i]['u_nro_documento'] . "</td>
                         <td class='align-middle'>" . $usuarios[$i]['u_usuario'] . "</td>
                         <td class='align-middle'>" . $usuarios[$i]['u_nombre1'] . " " . $usuarios[$i]['u_nombre2'] . " " . $usuarios[$i]['u_apellido1'] . " " . $usuarios[$i]['u_apellido2'] . "</td>
-                        <td class='d-flex justify-content-around'>";
+                        <td class='d-flex justify-content-around'><button class='btn btn-info' onClick='verUsuario(". $usuarios[$i]['u_id'] .")' data-toggle='tooltip' title='Ingresar a usuario'><i class='far fa-address-card'></i></button>";
         if ($log == 1) {
           $respuesta .= "<button class='btn btn-info' onClick='logUsuarios(". $usuarios[$i]['u_id'] .")' data-toggle='tooltip' title='Logs'><i class='fas fa-list-alt'></i></button>";
         }
@@ -231,16 +231,20 @@
               ":u_activo" => 1,
               ":fk_ciudad" => $_REQUEST['ciudades']
               ));
+              
+      $id_usu = $db->consulta("SELECT * FROM mandino_usuarios WHERE u_nro_documento = :u_nro_documento", array(":u_nro_documento" => $_POST['nro_doc']) );
+      
+      if (isset($_POST['empresas'])) {
+        foreach ($_POST['empresas'] as $emp) {
+          $db->sentencia("INSERT INTO empresas_usuarios(fk_usuario, fk_empresa, eu_fechaCreacion) VALUES(:fk_usuario, :fk_empresa, :eu_fechaCreacion)", array(":fk_usuario" => $id_usu[0]['u_id'], ":fk_empresa" => $emp, ":eu_fechaCreacion" => date("Y-m-d H:i:s")));
+        }
+      }
 
       if(isset($_POST['cursos'])){
-        $id_usu = $db->consulta("SELECT * FROM mandino_usuarios WHERE u_nro_documento = :u_nro_documento", array(":u_nro_documento" => $_POST['nro_doc']) );
-
         foreach ($_POST['cursos'] as $cursos) {
           $db->sentencia("INSERT INTO mandino_curso_usuario(fk_mc, id_usuario, fecha_creacion, id_creador, mcu_activo) VALUES(:fk_mc, :id_usuario, :fecha_creacion, :id_creador, 1)", array(":fk_mc" => $cursos, ":id_usuario" => $id_usu[0]['u_id'], ":fecha_creacion" => date('Y-m-d H:i:s'), ":id_creador" => $_POST['usuarioCreador']));
         }
-
       }
-
 
       if(@$_FILES['foto']['size'][0] > 0){ //GUARDAMOS IMAGENES
         $config_upload=array(
@@ -279,6 +283,16 @@
 
     $db->sentencia("UPDATE mandino_usuarios SET u_nombre1 = :u_nombre1, u_nombre2 = :u_nombre2, u_apellido1 = :u_apellido1, u_apellido2 = :u_apellido2, u_correo = :u_correo, u_telefono = :u_telefono, fk_ciudad = :fk_ciudad WHERE u_id = :u_id", array(":u_nombre1" => $_POST['editNombre1'], ":u_nombre2" => $_POST['editNombre2'], ":u_apellido1" => $_POST['editApellido1'], ":u_apellido2" => $_POST['editApellido2'], ":u_correo" => $_POST['editCorreo'], ":u_telefono" => $_POST['editTelefono'], ":u_id" => $_POST['editarIdUsu'], ":fk_ciudad" => $_POST['editciudades']));
 
+    //Borramos toda las empresas con el usuario a editar
+    $db->sentencia("DELETE FROM empresas_usuarios WHERE fk_usuario = :fk_usuario", array(":fk_usuario" => $_POST['editarIdUsu']));
+
+    //Validamos si seleccionaron alguna empresa
+    if ($_POST['editEmpresas']) {
+      foreach ($_POST['editEmpresas'] as $emp) {
+        $db->sentencia("INSERT INTO empresas_usuarios (fk_usuario, fk_empresa, eu_fechaCreacion) VALUES(:fk_usuario, :fk_empresa, :eu_fechaCreacion)", array(":fk_usuario" => $_POST['editarIdUsu'], ":fk_empresa" => $emp, ":eu_fechaCreacion" => date("Y-m-d H:i:s")));
+      }
+    }
+
     $db->desconectar();
     
     return "Ok";
@@ -288,8 +302,8 @@
     $resp = "";
     $db = new Bd();
     $db->conectar();
-
-    $cursos = $db->consulta("SELECT * FROM mandino_curso");
+    
+    $cursos = $db->consulta("SELECT mc.mc_id AS mc_id, mc.mc_nombre AS mc_nombre FROM empresas_usuarios AS eu INNER JOIN empresas_cursos AS ec ON eu.fk_empresa = ec.fk_empresa INNER JOIN mandino_curso AS mc ON mc.mc_id = ec.fk_curso WHERE fk_usuario = :fk_usuario GROUP BY ec.fk_curso", array(":fk_usuario" => $_POST['idUsu']));
 
     for ($i=0; $i < $cursos['cantidad_registros']; $i++) { 
       $cursos_usuarios = $db->consulta("SELECT * FROM mandino_curso_usuario WHERE fk_mc = :fk_mc AND id_usuario = :id_usuario AND mcu_activo = 1", array(":fk_mc" => $cursos[$i]['mc_id'], ":id_usuario" => $_POST['idUsu']));
@@ -531,6 +545,69 @@
     $db->desconectar();
 
     return json_encode($sql);
+  }
+
+  function UsuariosEmpresas(){
+    $db = new Bd();
+    $db->conectar();
+
+    $empresas = $db->consulta("SELECT e_id, e_nombre FROM empresas");
+
+    for ($i=0; $i < $empresas['cantidad_registros']; $i++) { 
+      $sql = $db->consulta("SELECT * FROM empresas_usuarios WHERE fk_usuario = :fk_usuario AND fk_empresa = :fk_empresa", array(":fk_usuario" => $_REQUEST['idUsuario'], ":fk_empresa" => $empresas[$i]['e_id']));
+
+      if ($sql['cantidad_registros'] == 1) {
+        $empresas[$i]['check'] = true;
+        array_push($empresas[$i], true);
+      } else {
+        $empresas[$i]['check'] = false;
+        array_push($empresas[$i], false);
+      }
+    }
+
+    $db->desconectar();
+
+    return json_encode($empresas);
+  }
+
+  function CrearUsuarioAsodelco(){
+    $db = new Bd();
+    $db->conectar();
+    $respuesta = "";
+
+    if ((validarNroDocumento() == 0) && (validarUsuario() == 0)) {
+      $db->sentencia("INSERT INTO mandino_usuarios(u_nro_documento, u_usuario, u_password, u_nombre1, u_nombre2, u_apellido1, u_apellido2, u_foto, u_correo, u_telefono, fk_mt, u_fecha_creacion, u_cambio_pass, u_activo, fk_ciudad) VALUES (:u_nro_documento, :u_usuario, :u_password, :u_nombre1, :u_nombre2, :u_apellido1, :u_apellido2, :u_foto, :u_correo, :u_telefono, :fk_mt, :u_fecha_creacion, :u_cambio_pass, :u_activo, :fk_ciudad)", array(":u_nro_documento" => $_POST['nro_doc'], 
+              ":u_usuario" => $_POST['usuario'], 
+              ":u_password" => encriptarPass($_POST['nro_doc']),
+              ":u_nombre1" => $_POST['primer_nombre'], 
+              ":u_nombre2" => @$_POST['segundo_nombre'],   
+              "u_apellido1" => $_POST['primer_apellido'], 
+              "u_apellido2" => @$_POST['segundo_apellido'], 
+              ":u_foto" => "foto-usuario/0.png", 
+              ":u_correo" => $_POST['correo'], 
+              ":u_telefono" => @$_POST['telefono'], 
+              ":fk_mt" => 1, 
+              ":u_fecha_creacion" => date('Y-m-d H:i:s'), 
+              ":u_cambio_pass" => date('Y-m-d'), 
+              ":u_activo" => 1,
+              ":fk_ciudad" => $_REQUEST['ciudades']
+              ));
+              
+      $id_usu = $db->consulta("SELECT * FROM mandino_usuarios WHERE u_nro_documento = :u_nro_documento", array(":u_nro_documento" => $_POST['nro_doc']) );
+      
+      $db->sentencia("INSERT INTO empresas_usuarios(fk_usuario, fk_empresa, eu_fechaCreacion) VALUES(:fk_usuario, :fk_empresa, :eu_fechaCreacion)", array(":fk_usuario" => $id_usu[0]['u_id'], ":fk_empresa" => 2, ":eu_fechaCreacion" => date("Y-m-d H:i:s")));
+   
+
+      $db->sentencia("INSERT INTO mandino_curso_usuario(fk_mc, id_usuario, fecha_creacion, id_creador, mcu_activo) VALUES(:fk_mc, :id_usuario, :fecha_creacion, :id_creador, 1)", array(":fk_mc" => 2, ":id_usuario" => $id_usu[0]['u_id'], ":fecha_creacion" => date('Y-m-d H:i:s'), ":id_creador" => 1));
+
+      $respuesta = "Ok";
+    }else{
+      $respuesta = "Usuario o Nro de documento ya se encuentra registrado.";
+    }
+
+    $db->desconectar();
+
+    return $respuesta;
   }
 
   if(@$_REQUEST['accion']){
