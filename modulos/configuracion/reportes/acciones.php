@@ -62,11 +62,22 @@
 
   function reporteUsuario(){
     $resp = "";
+    $ciudades = "";
+    $cont = 1;
+
+    foreach ($_REQUEST['ciudad'] as $ciu) {
+      if ($cont == count($_REQUEST['ciudad'])) {
+        $ciudades .= $ciu;
+      } else {
+        $ciudades .= $ciu . ", ";
+      }
+      $cont++;
+    }
 
     $db = new Bd();
     $db->conectar();
 
-    $sql_usuarios = $db->consulta("SELECT u_id, concat(u_nombre1, ' ', u_nombre2, ' ', u_apellido1, ' ', u_apellido2) AS nombre_completo, m_nombre FROM mandino_usuarios INNER JOIN municipios ON m_id = fk_ciudad WHERE u_activo = 1 AND fk_ciudad = :fk_ciudad ORDER BY nombre_completo ASC", array(":fk_ciudad" => $_REQUEST['ciudad']));
+    $sql_usuarios = $db->consulta("SELECT u_id, concat(u_nombre1, ' ', u_nombre2, ' ', u_apellido1, ' ', u_apellido2) AS nombre_completo, m_nombre FROM mandino_usuarios INNER JOIN municipios ON m_id = fk_ciudad WHERE u_activo = 1 AND fk_ciudad IN (" . $ciudades . ") ORDER BY nombre_completo ASC");
 
     $sql_cursos = $db->consulta("SELECT mc_id, mc_nombre FROM mandino_curso");
 

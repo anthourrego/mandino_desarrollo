@@ -38,28 +38,28 @@
     echo $lib->datatables();
     echo $lib->jqueryValidate();
     echo $lib->alertify();
+    echo $lib->bootstrapSelect();
     echo $lib->mandino();
   ?>
 </head>
 <body>
 	<?php include_once($ruta_raiz . 'navBar.php'); ?>
   <!-- Contenido -->
-  <div class="container mt-4">
+  <div class="container mt-4 bg-white pt-3 pb-3 border rounded">
     <form id="form_reporte" class="form-row">
       <input type="hidden" name="accion" value="reporteUsuario">
-      <div class="col-12 col-md-3">
-        <label for="">Cuidad</label>
-        <select class="custom-select" name="ciudad" id="ciudad"></select>
+      <div class="col-12 col-md-4">
+        <label for="ciudad">Ciudades</label>
+        <select class="selectpicker form-control" name="ciudad[]" id="ciudad" data-live-search="true" data-size="5" title="Seleccione una ciudad" multiple data-selected-text-format="count > 3"></select>
       </div>
-      <div class="col-12 col-md-8 offset-md-1">
-        <label for="">Seleccione los cursos</label>
-        <div class="row" id="check_cursos"></div>
+      <div class="col-12 col-md-4">
+        <label for="cursos">Cursos</label>
+        <select class="selectpicker form-control" name="cursos[]" id="cursos" data-live-search="true" data-size="5" title="Seleccione los cursos" multiple data-selected-text-format="count > 2"></select>
       </div>
-      <div class="text-center col-12">
+      <div class="text-center col-12 col-md-4 align-self-end">
         <button class="btn btn-primary" type="submit"><i class="fas fa-search"></i> Consultar</button>
       </div>
     </form>
-    <hr>
   </div>
 
   <div class="container-fluid mt-4">
@@ -86,12 +86,13 @@
       },
       success: function(data){
         $("#ciudad").empty();
-        $("#ciudad").append(`<option value="0" disabled selected>Seleccione un opción</option>`);
         for (let i = 0; i < data.cantidad_registros; i++) {
           $("#ciudad").append(`
             <option value="${data[i].fk_ciudad}">${data[i].m_nombre}</option>
           `);
         }
+        $("#ciudad").selectpicker('refresh');
+        $("#ciudad").focus().select();
       },
       error: function(){
         alertify.error("No se ha cargado las ciudades");
@@ -108,22 +109,19 @@
         accion: "listaCursos"
       },
       success: function(data){
-        $("#check_cursos").empty();
+        $("#cursos").empty();
 
         for (let i = 0; i < data.cantidad_registros; i++) {
-          $("#check_cursos").append(`
-            <div class="custom-control custom-checkbox custom-control-inline">
-              <input type="checkbox" class="custom-control-input" name="cursos[]" required value="${data[i].mc_id}" id="${data[i].mc_nombre}">
-              <label class="custom-control-label" for="${data[i].mc_nombre}">${data[i].mc_nombre}</label>
-            </div>
+          $("#cursos").append(`
+            <option value="${data[i].mc_id}">${data[i].mc_nombre}</option>
           `);
         }
+        $("#cursos").selectpicker('refresh');
       },
       error: function(){
         alertify.error("Error al traer los cursos.");
       }
     });
-
 
     //Validaciones del reporte
     $("#form_reporte").validate({
