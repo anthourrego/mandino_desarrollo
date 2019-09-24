@@ -46,8 +46,22 @@
   ?>
   <!-- Contenido -->
   <div class="container mt-5">
-		<h1 class="titulo text-hyundai text-center text-lg-left"></h1>
-    <div id="contenido-modulos">
+    <div class="row mb-3">
+      <div class="col-12 col-md-2 align-self-center">
+        <?php 
+          if(@!$_REQUEST['id_usuario']){
+            echo '<a class="btn btn-secondary" href="cursos"><i class="fas fa-angle-left"></i> Cursos</a>';
+          }else{
+            echo '<a class="btn btn-secondary" href="cursos?id_usuario=' . $id_usuario . '"><i class="fas fa-angle-left"></i> Cursos</a>';
+          }
+        ?>
+      </div>
+      <div class="col-12 col-md-10">
+		    <h1 class="titulo text-hyundai text-left"></h1>
+      </div>
+    </div>
+    <hr>
+    <div class="row justify-content-center" id="contenido-modulos">
       
     </div>
   </div>

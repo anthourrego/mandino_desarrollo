@@ -276,7 +276,7 @@
 
 			$sql_mu = $db->consulta("SELECT * FROM mandino_unidades WHERE fk_mc = :fk_mc ORDER BY mu_orden ASC", array(":fk_mc" => $sql_mc[$i]['mc_id']));
 			
-			$lista .= "<div class='row'>";
+			//$lista .= "<div class='row'>";
 
 			for ($k=0; $k < $sql_mu['cantidad_registros']; $k++) { 
 				$sql_ml = $db->consulta("SELECT * FROM mandino_lecciones WHERE fk_mu = :id_mu AND ISNULL(fk_ml) ORDER BY ml_orden ASC", array(":id_mu" => $sql_mu[$k]['mu_id']));
@@ -410,7 +410,7 @@
 				}
 			}
 			
-			$lista .= "</div>";
+			//$lista .= "</div>";
 	 	}
 
 	  $db->desconectar();

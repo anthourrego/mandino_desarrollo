@@ -93,6 +93,11 @@
     $respuesta = "";
     $per = 0;
     $log = 0;
+    $ingresar_usuario = 0;
+    $taller_intentos = 0;
+    $editar = 0;
+    $cursos = 0;
+    $inhabilitar = 0; 
 
     $usuarios = $db->consulta("SELECT * FROM mandino_usuarios INNER JOIN municipios ON m_id = fk_ciudad WHERE u_activo = :u_activo", array(":u_activo" => $_GET['habilitado']));
 
@@ -123,6 +128,10 @@
         $inhabilitar = 1;
       }
 
+      if ($permisos->validarPermiso($usuario['id'], "ingresar_usuario")){
+        $ingresar_usuario = 1;
+      }
+
       for ($i=0; $i < $usuarios['cantidad_registros']; $i++) { 
 
         $respuesta .= "<tr>
@@ -130,7 +139,12 @@
                         <td class='align-middle'>" . $usuarios[$i]['u_nro_documento'] . "</td>
                         <td class='align-middle'>" . $usuarios[$i]['u_usuario'] . "</td>
                         <td class='align-middle'>" . $usuarios[$i]['u_nombre1'] . " " . $usuarios[$i]['u_nombre2'] . " " . $usuarios[$i]['u_apellido1'] . " " . $usuarios[$i]['u_apellido2'] . "</td>
-                        <td class='d-flex justify-content-around'><button class='btn btn-info' onClick='verUsuario(". $usuarios[$i]['u_id'] .")' data-toggle='tooltip' title='Ingresar a usuario'><i class='far fa-address-card'></i></button>";
+                        <td class='d-flex justify-content-around'>";
+        
+        if($ingresar_usuario == 1){
+          $respuesta .= "<button class='btn btn-info' onClick='verUsuario(". $usuarios[$i]['u_id'] .")' data-toggle='tooltip' title='Ingresar a usuario'><i class='far fa-address-card'></i></button>";
+        }
+        
         if ($log == 1) {
           $respuesta .= "<button class='btn btn-info' onClick='logUsuarios(". $usuarios[$i]['u_id'] .")' data-toggle='tooltip' title='Logs'><i class='fas fa-list-alt'></i></button>";
         }

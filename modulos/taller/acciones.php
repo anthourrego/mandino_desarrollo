@@ -105,7 +105,9 @@
         $contenidoTabla .= '<td>' . $sql_mtu[$i]['mtu_preguntas_correctas'] . '/' . $sql_mtu[$i]['mtu_preguntas_totales'] . '</td>';
         //$contenidoTabla .= '<td>' . round($porcentaje) . '%</td>';
         $contenidoTabla .= '<td>' . $interval->format('%H horas %i minutos %s segundos') . '</td>';    
-        //$contenidoTabla .= '<td><button class="btn btn-info" onclick="revisionTaller(' . $sql_mtu[$i]['mtu_id'] . ')"><i class="fas fa-tasks"></i> Revisión</button></td>';
+        if ($_REQUEST['revisar'] == 1) {
+          $contenidoTabla .= '<td><button class="btn btn-info" onclick="revisionTaller(' . $sql_mtu[$i]['mtu_id'] . ')"><i class="fas fa-tasks"></i> Revisión</button></td>';
+        }
         $contenidoTabla .= '</tr>';
         
         $ultimaHora = $sql_mtu[$i]['mtu_fecha_final'];
@@ -209,7 +211,6 @@
       $sql_select_mtp = $db->consulta("SELECT * FROM mandino_taller_preguntas WHERE fk_mt = :fk_mt", array(":fk_mt" => $_POST['taller']));
 
       for ($i=0; $i <$sql_select_mtp['cantidad_registros']; $i++) { 
-        # code...
         $sql_select_mtpo = $db->consulta("SELECT mtpo_id FROM mandino_taller_preguntas_opciones WHERE fk_mtp = :fk_mtp AND mtpo_correcta = 1", array(":fk_mtp" => $sql_select_mtp[$i]['mtp_id']));
         
         $id_respuesta_correcta = $sql_select_mtpo[0]['mtpo_id'];

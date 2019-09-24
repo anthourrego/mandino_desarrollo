@@ -18,6 +18,16 @@
   $session = new Session();
 
   $usuario = $session->get("usuario");
+  $id_usuario = 0;
+  $revisar = 0;
+
+  if (@$_REQUEST['id_usuario']) {
+    $id_usuario = $_REQUEST['id_usuario'];
+    $revisar = 1;
+  } else {
+    $id_usuario = $usuario['id'];
+    $revisar = 0;
+  }
 ?>
 
 <div id="tabla-inicio">
@@ -33,7 +43,11 @@
         <th scope="col">Intento #</th>
         <th scope="col">Resultado</th>
         <th scope="col">Tiempo</th>
-        <!--<th scope="col">Revisión</th>-->
+        <?php 
+          if(@$_REQUEST['id_usuario']){
+            echo '<th scope="col">Revisión</th>';
+          }
+        ?>
       </tr>
     </thead>
     <tbody id="contenidoTabla">
@@ -161,7 +175,7 @@
     $.ajax({
       type: "POST",
       url: "<?php echo($ruta_raiz) ?>modulos/taller/acciones",
-      data: {accion: "registroTalleresIntentos", taller: <?php echo $taller; ?>, usu: <?php echo($usuario['id']); ?>, less: <?php echo($_GET['less']); ?>},
+      data: {accion: "registroTalleresIntentos", taller: <?php echo $taller; ?>, usu: <?php echo($id_usuario); ?>, less: <?php echo($_GET['less']); ?>, revisar: <?php echo($revisar); ?>},
       success: function(data){
         $("#contenidoTabla").html(data);
       },
@@ -176,7 +190,7 @@
     $.ajax({
       type: "POST",
       url: "<?php echo($ruta_raiz) ?>modulos/taller/acciones",
-      data: {accion: "agregarIntento", intento: inteto, usu: <?php echo($usuario['id']); ?>, less: <?php echo($_GET['less']); ?>},
+      data: {accion: "agregarIntento", intento: inteto, usu: <?php echo($id_usuario); ?>, less: <?php echo($_GET['less']); ?>},
       success: function(data){
         if (data == 1) {
           alertify.success("Se ha agregado el intento.");
