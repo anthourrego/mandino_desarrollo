@@ -15,7 +15,14 @@
   include_once($ruta_raiz . 'clases/Conectar.php');
 
   $usuario = $session->get("usuario");
+  $id_usuario = 0;
 
+  if (@$_REQUEST['id_usuario']) {
+    $id_usuario = $_REQUEST['id_usuario'];
+  } else {
+    $id_usuario = $usuario['id'];
+  }
+  
   $lib = new Libreria;
 
 ?>
@@ -32,7 +39,11 @@
   ?>
 </head>
 <body>
-	<?php include_once($ruta_raiz . 'navBar.php'); ?>
+  <?php 
+    if (@!$_REQUEST['id_usuario']){
+      include_once($ruta_raiz . 'navBar.php'); 
+    }
+  ?>
   <!-- Contenido -->
   <div class="container mt-5">
 		<h1 class="titulo text-hyundai text-center text-lg-left"></h1>
@@ -64,7 +75,7 @@
       url: 'acciones',
       type: 'POST',
       dataType: 'html',
-      data: {accion: 'modulosUnidades', curso: '<?php echo($_GET['curso']); ?>', user: '<?php echo $usuario['id']; ?>'},
+      data: {accion: 'modulosUnidades', curso: '<?php echo($_GET['curso']); ?>', user: '<?php echo($id_usuario); ?>'},
       success: function(data){
         $("#contenido-modulos").html(data);
       },
@@ -74,8 +85,20 @@
     });
     
   });
+
+  function leccion(uni, curso){
+    <?php
+      if (@!$_REQUEST['id_usuario']){
+        echo 'window.location.href = "leccion.php?uni=" + uni + "&curso=" + curso;'; 
+      }else{
+        echo 'window.location.href = "leccion.php?uni=" + uni + "&curso=" + curso + "&id_usuario=' . $id_usuario . '";'; 
+      }
+    ?>
+  }
 </script>
 <?php 
-  echo $lib->cambioPantalla();
+  if (@!$_REQUEST['id_usuario']) {
+    echo $lib->cambioPantalla();
+  }
 ?>
 </html>

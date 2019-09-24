@@ -123,7 +123,7 @@
     </div>
   </div>
 
-  <!-- Modal Crear curso -->
+  <!-- Modal Editar curso -->
   <div class="modal fade" id="modalEditarCurso" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog " role="document">
       <div class="modal-content">
@@ -243,13 +243,14 @@
           processData: false,
           data: new FormData(this),
           success: function(data){
-            if (data == "Ok") {
+            if (data == 1) {
               alertify.success("Se ha actualizado correctamente");
               $('#modalEditarCurso').modal("hide");
               $('#formEditarCurso')[0].reset();
               cargarCursos();
+              datosCurso($("#idCurso").val());
             }else{
-              alertify.error(data);
+              alertify.error(data.replace(/['"]+/g, ''));
             }
           },
           error: function(){
@@ -290,7 +291,6 @@
         $("#btn-abrir").removeAttr('disabled');
         $("#btn-abrir").removeClass('disabled');  
         $("#btn-abrir").val(data.mc_id);
-        
 
       },
       error: function(){

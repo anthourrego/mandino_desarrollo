@@ -17,6 +17,14 @@
   $session = new Session();
 
   $usuario = $session->get("usuario");
+  $id_usuario = 0;
+
+  if (@$_REQUEST['id_usuario']) {
+    $id_usuario = $_REQUEST['id_usuario'];
+  } else {
+    $id_usuario = $usuario['id'];
+  }
+  
 
   $lib = new Libreria;
   $titulo = '';
@@ -155,6 +163,7 @@
   }
 
   function botonesUnidadAnterior($curso, $unidad){
+    global $id_usuario;
     $db = new Bd();
     $db->conectar();
     $btn = "";
@@ -167,7 +176,11 @@
       if($sql1['cantidad_registros'] == 1){
         $sql2 = $db->consulta("SELECT * FROM mandino_lecciones WHERE fk_mu = :fk_mu ORDER BY ml_orden DESC LIMIT 1", array(":fk_mu" => $sql1[0]['mu_id']));
 
-        $btn = '<a class="btn btn-success" href="leccion?uni=' . $sql1[0]['mu_id'] . '&less=' . $sql2[0]['ml_id'] . '&curso=' . $curso . '"><i class="fas fa-angle-left"></i> Unidad Anterior</a>';
+        if (@!$_REQUEST['id_usuario']){
+          $btn = '<a class="btn btn-success" href="leccion?uni=' . $sql1[0]['mu_id'] . '&less=' . $sql2[0]['ml_id'] . '&curso=' . $curso . '"><i class="fas fa-angle-left"></i> Unidad Anterior</a>';
+        }else{
+          $btn = '<a class="btn btn-success" href="leccion?uni=' . $sql1[0]['mu_id'] . '&less=' . $sql2[0]['ml_id'] . '&curso=' . $curso . '&id_usuario=' . $id_usuario . '"><i class="fas fa-angle-left"></i> Unidad Anterior</a>';
+        }
       }else{
         $btn = '<button type="button" class="btn btn-success" disabled><i class="fas fa-angle-left"></i> Anterior</button>';
       }
@@ -181,6 +194,7 @@
   }
 
   function botonesUnidadSiguiente($curso, $unidad, $leccionActual, $usuario){
+    global $id_usuario;
     $db = new Bd();
     $db->conectar();
     $btn = "";
@@ -193,7 +207,11 @@
         if($sql1['cantidad_registros'] == 1){
           $sql2 = $db->consulta("SELECT * FROM mandino_lecciones WHERE fk_mu = :fk_mu ORDER BY ml_orden ASC LIMIT 1", array(":fk_mu" => $sql1[0]['mu_id']));
 
-          $btn = '<a class="btn btn-success" href="leccion?uni=' . $sql1[0]['mu_id'] . '&less=' . $sql2[0]['ml_id'] . '&curso=' . $curso . '">Unidad Siguiente <i class="fas fa-angle-right"></i></a>';
+          if (@!$_REQUEST['id_usuario']){
+            $btn = '<a class="btn btn-success" href="leccion?uni=' . $sql1[0]['mu_id'] . '&less=' . $sql2[0]['ml_id'] . '&curso=' . $curso . '">Unidad Siguiente <i class="fas fa-angle-right"></i></a>';
+          }else{
+            $btn = '<a class="btn btn-success" href="leccion?uni=' . $sql1[0]['mu_id'] . '&less=' . $sql2[0]['ml_id'] . '&curso=' . $curso . '&id_usuario=' . $id_usuario . '">Unidad Siguiente <i class="fas fa-angle-right"></i></a>';
+          }
         }else{
           $btn = '<button type="button" class="btn btn-success" disabled>Siguiente <i class="fas fa-angle-right"></i></button>';
         }
@@ -227,9 +245,13 @@
   $db = new Bd();
   $db->conectar();
 
-  if (leccionesVistas($usuario['id'], moduloActual($_GET['uni'])) == 0) {
-    agregarVistoLeccion($usuario['id'], primeraLeccion($_GET['uni']));
-    header('Location: ' . $ruta_raiz . 'leccion?uni=' . $_GET['uni'] . '&curso=' . $_GET['curso'] . '&less=' . primeraLeccion($_GET['uni']));
+  if (leccionesVistas($id_usuario, moduloActual($_GET['uni'])) == 0) {
+    agregarVistoLeccion($id_usuario, primeraLeccion($_GET['uni']));  
+    if (@!$_REQUEST['id_usuario']){
+      header('Location: ' . $ruta_raiz . 'leccion?uni=' . $_GET['uni'] . '&curso=' . $_GET['curso'] . '&less=' . primeraLeccion($_GET['uni']));
+    }else{
+      header('Location: ' . $ruta_raiz . 'leccion?uni=' . $_GET['uni'] . '&curso=' . $_GET['curso'] . '&less=' . primeraLeccion($_GET['uni'] . '&id_usuario=' . $id_usuario));
+    }
   }
 
 
@@ -239,28 +261,37 @@
     $sql_select_ml = $db->consulta("SELECT * FROM mandino_lecciones WHERE fk_mu = :fk_mu", array(":fk_mu" => $_GET['uni']));
 
     for ($i=0; $i < $sql_select_ml['cantidad_registros']; $i++) { 
-      $sql_select_mlv = $db->consulta("SELECT * FROM mandino_lecciones_visto WHERE fk_usuario = :fk_usuario AND fk_ml = :fk_ml", array(":fk_usuario" => $usuario['id'], ":fk_ml" => $sql_select_ml[$i]['ml_id']));
+      $sql_select_mlv = $db->consulta("SELECT * FROM mandino_lecciones_visto WHERE fk_usuario = :fk_usuario AND fk_ml = :fk_ml", array(":fk_usuario" => $id_usuario, ":fk_ml" => $sql_select_ml[$i]['ml_id']));
       if ($sql_select_mlv['cantidad_registros'] == 1) {
         $ultimaLeccionVista = $sql_select_mlv[0]['fk_ml'];
       }
     }
-    header('Location: leccion?uni=' . $_GET['uni'] . '&curso=' . $_GET['curso'] . '&less=' . $ultimaLeccionVista);
+    if (@!$_REQUEST['id_usuario']){
+      header('Location: leccion?uni=' . $_GET['uni'] . '&curso=' . $_GET['curso'] . '&less=' . $ultimaLeccionVista);
+    }else{
+      header('Location: leccion?uni=' . $_GET['uni'] . '&curso=' . $_GET['curso'] . '&less=' . $ultimaLeccionVista . '&id_usuario=' . $id_usuario);
+    }
+    
   }elseif ($_GET['less'] == 0 && $_GET['less'] == "") {
-    header('Location: unidades?curso=' . $_GET['curso'] );
+    if (@!$_REQUEST['id_usuario']){
+      header('Location: unidades?curso=' . $_GET['curso']);
+    }else{
+      header('Location: unidades?curso=' . $_GET['curso'] . '&id_usuario=' . $id_usuario);
+    }
   }
 
   //Se agrega la leccion actual si no se a visto anteriormente
-  if (validarLeccion(@$_GET['less'], $usuario['id']) == 0 && isset($_GET['less']) && $_GET['less'] != "") {
-    agregarVistoLeccion($usuario['id'], $_GET['less']);
+  if (validarLeccion(@$_GET['less'], $id_usuario) == 0 && isset($_GET['less']) && $_GET['less'] != "") {
+    agregarVistoLeccion($id_usuario, $_GET['less']);
   }
 
   //Validamos cual es la ultima leccion de la unidad
   if (ultimaLeccion($_GET['uni']) == $_GET['less']) {
     $siguienteUnidad = siguienteUnidad($_GET['uni']+1);
     if (validarSiguienteUnidad($siguienteUnidad) == 1) {
-      if (validarLeccion($siguienteUnidad, $usuario['id']) == 0) {
+      if (validarLeccion($siguienteUnidad, $id_usuario) == 0) {
         if (validarLeccionTaller($_GET['less']) == 0) {
-          agregarVistoLeccion($usuario['id'], $siguienteUnidad);
+          agregarVistoLeccion($id_usuario, $siguienteUnidad);
         }
       }
     }
@@ -273,11 +304,20 @@
     $sql_ml = $db->consulta("SELECT * FROM mandino_lecciones WHERE fk_mu = :id_mu ORDER BY ml_orden ASC", array(":id_mu" => $sql_mu[$i]['mu_id']));
 
     for ($j=0; $j < $sql_ml['cantidad_registros']; $j++) { 
-      if (validarLeccion($sql_ml[$j]['ml_id'], $usuario['id']) == 1) {
+      if (validarLeccion($sql_ml[$j]['ml_id'], $id_usuario) == 1) {
         if (@$_GET['less'] == $sql_ml[$j]['ml_id']) {
-          $lista .= '<a href="leccion?uni=' . $sql_mu[$i]['mu_id'] . '&less=' . $sql_ml[$j]['ml_id'] . '&curso=' . $_GET['curso'] . '" class="list-group-item active">' . $sql_ml[$j]['ml_nombre'] . '</a>';
+          if (@!$_REQUEST['id_usuario']){
+            $lista .= '<a href="leccion?uni=' . $sql_mu[$i]['mu_id'] . '&less=' . $sql_ml[$j]['ml_id'] . '&curso=' . $_GET['curso'] . '" class="list-group-item active">' . $sql_ml[$j]['ml_nombre'] . '</a>';
+          }else{
+            $lista .= '<a href="leccion?uni=' . $sql_mu[$i]['mu_id'] . '&less=' . $sql_ml[$j]['ml_id'] . '&curso=' . $_GET['curso'] . '&id_usuario=' . $id_usuario . '" class="list-group-item active">' . $sql_ml[$j]['ml_nombre'] . '</a>';
+          }
+          
         }else{
-          $lista .= '<a href="leccion?uni=' . $sql_mu[$i]['mu_id'] . '&less=' . $sql_ml[$j]['ml_id'] . '&curso=' . $_GET['curso'] . '" class="list-group-item">' . $sql_ml[$j]['ml_nombre'] . '</a>';
+          if (@!$_REQUEST['id_usuario']){
+            $lista .= '<a href="leccion?uni=' . $sql_mu[$i]['mu_id'] . '&less=' . $sql_ml[$j]['ml_id'] . '&curso=' . $_GET['curso'] . '" class="list-group-item">' . $sql_ml[$j]['ml_nombre'] . '</a>';
+          }else{
+            $lista .= '<a href="leccion?uni=' . $sql_mu[$i]['mu_id'] . '&less=' . $sql_ml[$j]['ml_id'] . '&curso=' . $_GET['curso'] . '&id_usuario=' . $id_usuario . '" class="list-group-item">' . $sql_ml[$j]['ml_nombre'] . '</a>';
+          }
         }
       }else{
         $lista .= '<a href="#" class="list-group-item disabled">' . $sql_ml[$j]['ml_nombre'] . '</a>';
@@ -298,15 +338,23 @@
   }
 
   if (validar(@$btnAnt, $_GET['uni']) == 1) {
-    $btnAntHtml = '<a class="btn btn-success" href="leccion?uni=' . $_GET['uni'] . '&less=' . $btnAnt . '&curso=' . $_GET['curso'] . '"><i class="fas fa-angle-left"></i> Anterior</a>';
+    if (@!$_REQUEST['id_usuario']){
+      $btnAntHtml = '<a class="btn btn-success" href="leccion?uni=' . $_GET['uni'] . '&less=' . $btnAnt . '&curso=' . $_GET['curso'] . '"><i class="fas fa-angle-left"></i> Anterior</a>';
+    }else{
+      $btnAntHtml = '<a class="btn btn-success" href="leccion?uni=' . $_GET['uni'] . '&less=' . $btnAnt . '&curso=' . $_GET['curso'] . '&id_usuario=' . $id_usuario . '"><i class="fas fa-angle-left"></i> Anterior</a>';
+    }
   }else{
     $btnAntHtml = botonesUnidadAnterior($_GET['curso'], $_GET['uni']);
   }
 
   if (validar(@$btnSig, $_GET['uni']) == 1) {
-    $btnSigHtml = '<a class="btn btn-success" href="leccion?uni=' . $_GET['uni'] . '&less=' . $btnSig . '&curso=' . $_GET['curso'] . '">Siguiente <i class="fas fa-angle-right"></i></a>';
+    if (@!$_REQUEST['id_usuario']){
+      $btnSigHtml = '<a class="btn btn-success" href="leccion?uni=' . $_GET['uni'] . '&less=' . $btnSig . '&curso=' . $_GET['curso'] . '">Siguiente <i class="fas fa-angle-right"></i></a>';
+    }else{
+      $btnSigHtml = '<a class="btn btn-success" href="leccion?uni=' . $_GET['uni'] . '&less=' . $btnSig . '&curso=' . $_GET['curso'] . '&id_usuario=' . $id_usuario . '">Siguiente <i class="fas fa-angle-right"></i></a>';
+    }
   }else{
-    $btnSigHtml = botonesUnidadSiguiente($_GET['curso'], $_GET['uni'], $_GET['less'], $usuario['id']);
+    $btnSigHtml = botonesUnidadSiguiente($_GET['curso'], $_GET['uni'], $_GET['less'], $id_usuario);
     //$btnSigHtml = '<button type="button" class="btn btn-success" disabled>Siguiente <i class="fas fa-angle-right"></i></button>';
   } 
 
@@ -329,13 +377,23 @@
   ?>
 </head>
 <body>
-  <?php include_once($ruta_raiz . 'navBar.php'); ?>
+  <?php 
+    if (@!$_REQUEST['id_usuario']) {
+      include_once($ruta_raiz . 'navBar.php');
+    }
+  ?>
   <!-- Contenido -->
   <div class="container-fluid">
     <div class="row mt-5 mb-5">
       <div class="col-12 col-md-3">
         <div class="mb-3">
-          <a class="btn btn-secondary" href="unidades?curso=<?php echo $_GET['curso'] ?>"><i class="fas fa-angle-left"></i> Unidades</a>
+          <?php 
+            if(@!$_REQUEST['id_usuario']){
+              echo '<a class="btn btn-secondary" href="unidades?curso=' . $_GET['curso'] . '"><i class="fas fa-angle-left"></i> Unidades</a>';
+            }else{
+              echo '<a class="btn btn-secondary" href="unidades?curso=' . $_GET['curso'] . '&id_usuario=' . $id_usuario . '"><i class="fas fa-angle-left"></i> Unidades</a>';
+            }
+          ?>
         </div>
         <h4 id="titulo-unidad" class="titulo text-hyundai my-2 text-center text-md-left"></h4>
         <div class="list-group rounded">
@@ -375,7 +433,9 @@
     </div>
   </div>
 </body>
-<?php 
-  echo $lib->cambioPantalla();
+<?php
+  if (@!$_REQUEST['id_usuario']) {
+    echo $lib->cambioPantalla();
+  }
 ?>
 </html>

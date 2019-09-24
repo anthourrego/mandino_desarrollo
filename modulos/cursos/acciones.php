@@ -51,138 +51,46 @@
 
     $db->desconectar();
     return round($porcentaje);
-  }
+	}
 
   function centralCursos(){
   	//Generamos la conexion con la base de datos
 	  $curso = '';
 	  $porcentaje = 0;
+		$emp = ""; //Se guardan los valores con la empresas relacionadas con usuarios
+		$emp_curso = ""; //Se guardan los valos de los cursos que tienen la empresas
+
 
   	$db = new Bd();
-  	$db->conectar();
+		$db->conectar();
 
-  	$sql_mc = $db->consulta("SELECT * FROM  mandino_curso");
+		$sql_mc = $db->consulta("SELECT * FROM empresas_usuarios AS eu INNER JOIN empresas_cursos AS ec ON eu.fk_empresa = ec.fk_empresa INNER JOIN mandino_curso AS mc ON mc.mc_id = ec.fk_curso WHERE fk_usuario = :fk_usuario GROUP BY ec.fk_curso", array(":fk_usuario" => $_POST['id_usu']));
 		
-  	for ($i=0; $i < $sql_mc['cantidad_registros'] ; $i++) { 
-			$sql_mcu = $db->consulta("SELECT * FROM mandino_curso_usuario WHERE fk_mc = :fk_mc AND id_usuario = :fk_usuario AND mcu_activo = 1", array(":fk_mc" => $sql_mc[$i]['mc_id'], ":fk_usuario" => $_POST['id_usu']));
-			
-			$sql_mu = $db->consulta("SELECT * FROM mandino_unidades WHERE fk_mc = :id", array(":id"=>$sql_mc[$i]['mc_id']));
-
-  		$porcentaje = porcentajeCurso($sql_mc[$i]['mc_id'], $_POST['id_usu']);
-
-			if($sql_mcu['cantidad_registros'] == 1){
-				if ($porcentaje == 0) {
-					$curso .= '<div class="col-12 col-sm-6 col-lg-4 mt-4 card-deck">
-											<div class="card m-shadow m-shadow-primary">
-												<div class="card-body">
-													 <div class="row">
-														<div class="col-10">
-															<h3 class="card-title text-center mb-3">' . $sql_mc[$i]['mc_nombre'] . '</h3>
-														</div>
-														<div class="col-2">';
-					if ($sql_mc[$i]['mc_descripcion'] != "") {
-						$curso .= '<button class="btn btn-info" onclick="mostrarInfo(\''. $sql_mc[$i]['mc_descripcion'] .'\')"><i class="fas fa-info"></i></button>';
-					}
-															
-														
-					$curso .= '</div>
-													</div>
-												</div>
-												<div class="card-footer bg-transparent border-0">
-													<div class="d-flex justify-content-between text-muted">
-														<span>' . $porcentaje . '%</span>
-														<span>' . $sql_mu['cantidad_registros'] . ' Unidades</span>
-													</div>
-													<div class="progress mb-4" style="height: 6px;">
-														<div class="progress-bar" role="progressbar" style="width:' . $porcentaje . '%;" aria-valuenow="' . $porcentaje . '" aria-valuemin="0" aria-valuemax="100"></div>
-													</div>
-													<div class="text-center">
-														<a class="btn btn-primary rounded-pill" href="unidades?curso=' . $sql_mc[$i]['mc_id'] . '"><i class="fas fa-pencil-alt"></i> Iniciar</a>
-													</div>
-												</div>
-											</div>
-										</div>';
-					}elseif ($porcentaje > 0 && $porcentaje < 100) {
+		if ($sql_mc['cantidad_registros'] > 0) {
+			for ($i=0; $i < $sql_mc['cantidad_registros'] ; $i++) { 
+				$sql_mcu = $db->consulta("SELECT * FROM mandino_curso_usuario WHERE fk_mc = :fk_mc AND id_usuario = :fk_usuario AND mcu_activo = 1", array(":fk_mc" => $sql_mc[$i]['mc_id'], ":fk_usuario" => $_POST['id_usu']));
+				
+				$sql_mu = $db->consulta("SELECT * FROM mandino_unidades WHERE fk_mc = :id", array(":id"=>$sql_mc[$i]['mc_id']));
+	
+				$porcentaje = porcentajeCurso($sql_mc[$i]['mc_id'], $_POST['id_usu']);
+	
+				if($sql_mcu['cantidad_registros'] == 1){
+					if ($porcentaje == 0) {
 						$curso .= '<div class="col-12 col-sm-6 col-lg-4 mt-4 card-deck">
-												<div class="card border border-warning m-shadow m-shadow-warning">
+												<div class="card m-shadow m-shadow-primary">
 													<div class="card-body">
-														<div class="row">
+															<div class="row">
 															<div class="col-10">
 																<h3 class="card-title text-center mb-3">' . $sql_mc[$i]['mc_nombre'] . '</h3>
 															</div>
-														<div class="col-2">';
+															<div class="col-2">';
 						if ($sql_mc[$i]['mc_descripcion'] != "") {
 							$curso .= '<button class="btn btn-info" onclick="mostrarInfo(\''. $sql_mc[$i]['mc_descripcion'] .'\')"><i class="fas fa-info"></i></button>';
-						}
-																
+						}									
 															
 						$curso .= '</div>
 														</div>
-														
-														</div>
-														<div class="card-footer bg-transparent border-0">
-														<div class="d-flex justify-content-between text-muted">
-															<span>' . $porcentaje . '%</span>
-															<span>' . $sql_mu['cantidad_registros'] . ' Unidades</span>
-														</div>
-														<div class="progress mb-4" style="height: 6px;">
-															<div class="progress-bar bg-warning" role="progressbar" style="width:' . $porcentaje . '%;" aria-valuenow="' . $porcentaje . '" aria-valuemin="0" aria-valuemax="100"></div>
-														</div>
-														<div class="text-center">
-															<a class="btn btn-warning rounded-pill" href="unidades?curso=' . $sql_mc[$i]['mc_id'] . '"><i class="fas fa-user-edit"></i> Continuar</a>
-															</div>
-														</div>
 													</div>
-												</div>';
-					}elseif ($porcentaje == 100) {
-						$curso .= '<div class="col-12 col-sm-6 col-lg-4 mt-4 card-deck">
-												<div class="card border border-info m-shadow m-shadow-info">
-													<div class="card-body">
-														<div class="row">
-															<div class="col-10">
-																<h3 class="card-title text-center mb-3">' . $sql_mc[$i]['mc_nombre'] . '</h3>
-															</div>
-														<div class="col-2">';
-						if ($sql_mc[$i]['mc_descripcion'] != "") {
-							$curso .= '<button class="btn btn-info" onclick="mostrarInfo(\''. $sql_mc[$i]['mc_descripcion'] .'\')"><i class="fas fa-info"></i></button>';
-						}
-																
-															
-						$curso .= '</div>
-														</div>
-												
-													</div>
-													<div class="card-footer bg-transparent border-0">
-														<div class="d-flex justify-content-between text-muted">
-															<span>' . $porcentaje . '%</span>
-															<span>' . $sql_mu['cantidad_registros'] . ' Unidades</span>
-														</div>
-														<div class="progress mb-4" style="height: 6px;">
-															<div class="progress-bar bg-info" role="progressbar" style="width:' . $porcentaje . '%;" aria-valuenow="' . $porcentaje . '" aria-valuemin="0" aria-valuemax="100"></div>
-														</div>
-														<div class="text-center">
-															<a class="btn btn-info rounded-pill" href="unidades?curso=' . $sql_mc[$i]['mc_id'] . '"><i class="fas fa-star" style="color: #FFDD43;"></i> Finalizado</a>
-														</div>
-													</div>
-												</div>
-											</div>';
-					}else{
-						$curso .= '<div class="col-12 col-sm-6 col-lg-4 mt-4 card-deck">
-												<div class="card border border-primary m-shadow m-shadow-primary">
-													<div class="card-body">
-														<div class="row">
-															<div class="col-10">
-																<h3 class="card-title text-center mb-3">' . $sql_mc[$i]['mc_nombre'] . '</h3>
-															</div>
-														<div class="col-2">';
-						if ($sql_mc[$i]['mc_descripcion'] != "") {
-							$curso .= '<button class="btn btn-info" onclick="mostrarInfo(\''. $sql_mc[$i]['mc_descripcion'] .'\')"><i class="fas fa-info"></i></button>';
-						}
-																
-															
-						$curso .= '</div>
-													</div>
-												</div>
 													<div class="card-footer bg-transparent border-0">
 														<div class="d-flex justify-content-between text-muted">
 															<span>' . $porcentaje . '%</span>
@@ -192,53 +100,146 @@
 															<div class="progress-bar" role="progressbar" style="width:' . $porcentaje . '%;" aria-valuenow="' . $porcentaje . '" aria-valuemin="0" aria-valuemax="100"></div>
 														</div>
 														<div class="text-center">
-															<button class="btn btn-primary rounded-pill disabled" disabled><i class="fas fa-pencil-ruler"></i> Iniciar</button>
+															<button class="btn btn-primary rounded-pill" onclick="unidades(' . $sql_mc[$i]['mc_id'] .')"><i class="fas fa-pencil-alt"></i> Iniciar</button>
 														</div>
 													</div>
 												</div>
 											</div>';
-					}
-			}else{
-				$curso .= '<div class="col-12 col-sm-6 col-lg-4 mt-4 card-deck">
-												<div class="card border border-secondary m-shadow">
-													<div class="card-body">
-														<div class="row">
-															<div class="col-10">
-																<h3 class="card-title text-center mb-3">' . $sql_mc[$i]['mc_nombre'] . '</h3>
-															</div>
-														<div class="col-2">';
-						if ($sql_mc[$i]['mc_descripcion'] != "") {
-							$curso .= '<button class="btn btn-secondary" onclick="mostrarInfo(\''. $sql_mc[$i]['mc_descripcion'] .'\')"><i class="fas fa-info"></i></button>';
-						}
+						}elseif ($porcentaje > 0 && $porcentaje < 100) {
+							$curso .= '<div class="col-12 col-sm-6 col-lg-4 mt-4 card-deck">
+													<div class="card border border-warning m-shadow m-shadow-warning">
+														<div class="card-body">
+															<div class="row">
+																<div class="col-10">
+																	<h3 class="card-title text-center mb-3">' . $sql_mc[$i]['mc_nombre'] . '</h3>
+																</div>
+															<div class="col-2">';
+							if ($sql_mc[$i]['mc_descripcion'] != "") {
+								$curso .= '<button class="btn btn-info" onclick="mostrarInfo(\''. $sql_mc[$i]['mc_descripcion'] .'\')"><i class="fas fa-info"></i></button>';
+							}										
 																
+							$curso .= '</div>
+															</div>
 															
-						$curso .= '</div>
+															</div>
+															<div class="card-footer bg-transparent border-0">
+															<div class="d-flex justify-content-between text-muted">
+																<span>' . $porcentaje . '%</span>
+																<span>' . $sql_mu['cantidad_registros'] . ' Unidades</span>
+															</div>
+															<div class="progress mb-4" style="height: 6px;">
+																<div class="progress-bar bg-warning" role="progressbar" style="width:' . $porcentaje . '%;" aria-valuenow="' . $porcentaje . '" aria-valuemin="0" aria-valuemax="100"></div>
+															</div>
+															<div class="text-center">
+																<button class="btn btn-warning rounded-pill" onclick="unidades(' . $sql_mc[$i]['mc_id'] .')"><i class="fas fa-user-edit"></i> Continuar</butotn>
+																</div>
+															</div>
 														</div>
-												
+													</div>';
+						}elseif ($porcentaje == 100) {
+							$curso .= '<div class="col-12 col-sm-6 col-lg-4 mt-4 card-deck">
+													<div class="card border border-info m-shadow m-shadow-info">
+														<div class="card-body">
+															<div class="row">
+																<div class="col-10">
+																	<h3 class="card-title text-center mb-3">' . $sql_mc[$i]['mc_nombre'] . '</h3>
+																</div>
+															<div class="col-2">';
+							if ($sql_mc[$i]['mc_descripcion'] != "") {
+								$curso .= '<button class="btn btn-info" onclick="mostrarInfo(\''. $sql_mc[$i]['mc_descripcion'] .'\')"><i class="fas fa-info"></i></button>';
+							}										
+																
+							$curso .= '</div>
+															</div>
+													
+														</div>
+														<div class="card-footer bg-transparent border-0">
+															<div class="d-flex justify-content-between text-muted">
+																<span>' . $porcentaje . '%</span>
+																<span>' . $sql_mu['cantidad_registros'] . ' Unidades</span>
+															</div>
+															<div class="progress mb-4" style="height: 6px;">
+																<div class="progress-bar bg-info" role="progressbar" style="width:' . $porcentaje . '%;" aria-valuenow="' . $porcentaje . '" aria-valuemin="0" aria-valuemax="100"></div>
+															</div>
+															<div class="text-center">
+																<button class="btn btn-info rounded-pill" onclick="unidades(' . $sql_mc[$i]['mc_id'] .')"><i class="fas fa-star" style="color: #FFDD43;"></i> Finalizado</button>
+															</div>
+														</div>
 													</div>
-													<div class="card-footer bg-transparent border-0">
-														<div class="d-flex justify-content-between text-muted">
-															<span>' . $porcentaje . '%</span>
-															<span>' . $sql_mu['cantidad_registros'] . ' Unidades</span>
-														</div>
-														<div class="progress mb-4" style="height: 6px;">
-															<div class="progress-bar bg-secondary" role="progressbar" style="width:' . $porcentaje . '%;" aria-valuenow="' . $porcentaje . '" aria-valuemin="0" aria-valuemax="100"></div>
-														</div>
-														<div class="text-center">
-															<a class="btn btn-secondary rounded-pill disabled" disabled href="#"><i class="fas fa-paper-plane"></i> Iniciar</a>
+												</div>';
+						}else{
+							$curso .= '<div class="col-12 col-sm-6 col-lg-4 mt-4 card-deck">
+													<div class="card border border-primary m-shadow m-shadow-primary">
+														<div class="card-body">
+															<div class="row">
+																<div class="col-10">
+																	<h3 class="card-title text-center mb-3">' . $sql_mc[$i]['mc_nombre'] . '</h3>
+																</div>
+															<div class="col-2">';
+							if ($sql_mc[$i]['mc_descripcion'] != "") {
+								$curso .= '<button class="btn btn-info" onclick="mostrarInfo(\''. $sql_mc[$i]['mc_descripcion'] .'\')"><i class="fas fa-info"></i></button>';
+							}
+																												
+							$curso .= '</div>
 														</div>
 													</div>
-												</div>
-											</div>';
+														<div class="card-footer bg-transparent border-0">
+															<div class="d-flex justify-content-between text-muted">
+																<span>' . $porcentaje . '%</span>
+																<span>' . $sql_mu['cantidad_registros'] . ' Unidades</span>
+															</div>
+															<div class="progress mb-4" style="height: 6px;">
+																<div class="progress-bar" role="progressbar" style="width:' . $porcentaje . '%;" aria-valuenow="' . $porcentaje . '" aria-valuemin="0" aria-valuemax="100"></div>
+															</div>
+															<div class="text-center">
+																<button class="btn btn-primary rounded-pill disabled" disabled><i class="fas fa-pencil-ruler"></i> Iniciar</button>
+															</div>
+														</div>
+													</div>
+												</div>';
+						}
+				}else{
+					$curso .= '<div class="col-12 col-sm-6 col-lg-4 mt-4 card-deck">
+													<div class="card border border-secondary m-shadow">
+														<div class="card-body">
+															<div class="row">
+																<div class="col-10">
+																	<h3 class="card-title text-center mb-3">' . $sql_mc[$i]['mc_nombre'] . '</h3>
+																</div>
+															<div class="col-2">';
+							if ($sql_mc[$i]['mc_descripcion'] != "") {
+								$curso .= '<button class="btn btn-secondary" onclick="mostrarInfo(\''. $sql_mc[$i]['mc_descripcion'] .'\')"><i class="fas fa-info"></i></button>';
+							}
+																									
+							$curso .= '</div>
+															</div>
+													
+														</div>
+														<div class="card-footer bg-transparent border-0">
+															<div class="d-flex justify-content-between text-muted">
+																<span>' . $porcentaje . '%</span>
+																<span>' . $sql_mu['cantidad_registros'] . ' Unidades</span>
+															</div>
+															<div class="progress mb-4" style="height: 6px;">
+																<div class="progress-bar bg-secondary" role="progressbar" style="width:' . $porcentaje . '%;" aria-valuenow="' . $porcentaje . '" aria-valuemin="0" aria-valuemax="100"></div>
+															</div>
+															<div class="text-center">
+																<a class="btn btn-secondary rounded-pill disabled" disabled href="#"><i class="fas fa-paper-plane"></i> Iniciar</a>
+															</div>
+														</div>
+													</div>
+												</div>';
+				}
 			}
-		
 		}
 
+			
 
   	$db->desconectar();
 
   	return $curso;
-  }
+		//return json_encode($sql_mc);
+	}
 
     function datosUnidad(){
   	$db = new Bd();
@@ -305,7 +306,7 @@
 											</p>          
 											</div>
 											<div class="card-footer text-center">
-												<a class="btn btn-primary rounded-pill" href="leccion?uni=' . $sql_mu[$k]['mu_id'] . '&curso=' . $_POST['curso'] . '"><i class="fas fa-pencil-alt"></i> Iniciar</a>
+												<button class="btn btn-primary rounded-pill" onClick="leccion(' . $sql_mu[$k]['mu_id'] . ', ' . $_POST['curso'] . ')"><i class="fas fa-pencil-alt"></i> Iniciar</button>
 											</div>
 										</div>
 									</div>';
@@ -329,7 +330,7 @@
 						$lista .= '</p>          
 											</div>
 											<div class="card-footer text-center">
-												<a class="btn btn-info rounded-pill" href="leccion?uni=' . $sql_mu[$k]['mu_id'] . '&curso=' . $_POST['curso'] . '"><i class="fas fa-star" style="color: #FFDD43;"></i> Finalizado</a>
+												<button class="btn btn-info rounded-pill" onClick="leccion(' . $sql_mu[$k]['mu_id'] . ', ' . $_POST['curso'] . ')"><i class="fas fa-star" style="color: #FFDD43;"></i> Finalizado</button>
 											</div>
 										</div>
 									</div>';
@@ -353,7 +354,7 @@
 						$lista .= '</p>          
 											</div>
 											<div class="card-footer text-center">
-												<a class="btn btn-primary rounded-pill" href="leccion?uni=' . $sql_mu[$k]['mu_id'] . '&curso=' . $_POST['curso'] . '"><i class="fas fa-pencil-alt"></i> Iniciar</a>
+												<button class="btn btn-primary rounded-pill" onClick="leccion(' . $sql_mu[$k]['mu_id'] . ', ' . $_POST['curso'] . ')"><i class="fas fa-pencil-alt"></i> Iniciar</button>
 											</div>
 										</div>
 									</div>';
@@ -377,7 +378,7 @@
 						$lista .= '</p>          
 										</div>
 										<div class="card-footer text-center">
-											<a class="btn btn-warning rounded-pill" href="leccion?uni=' . $sql_mu[$k]['mu_id'] . '&curso=' . $_POST['curso'] . '"><i class="fas fa-user-edit"></i> Continuar</a>
+											<button class="btn btn-warning rounded-pill" onClick="leccion(' . $sql_mu[$k]['mu_id'] . ', ' . $_POST['curso'] . ')"><i class="fas fa-user-edit"></i> Continuar</button>
 										</div>
 									</div>
 								</div>';

@@ -53,16 +53,15 @@
     <nav aria-label="breadcrumb">
       <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="index">Cursos</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Unidades</li>
+        <li class="breadcrumb-item active" aria-current="page" id="nav-modulo">Unidades</li>
       </ol>
     </nav>
-    <div class="row d-flex justify-content-between">
       <div class="col-12 col-md-6">
         <table id="tabla" class="table table-hover">
           <thead class="text-center">
             <tr>
               <th>Orden</th>
-              <th>Unidades</th>
+              <th>Lecciones</th>
             </tr>
           </thead>
           <tbody id="contenido-tabla" class="text-center"></tbody>
@@ -166,185 +165,6 @@
   echo $lib->cambioPantalla();
 ?>
 <script type="text/javascript">
-  $(function(){
-    listaUnidades();
-
-    //Crear unidad
-    $("form").validate({
-      debug: true,
-      errorElement: 'span',
-      errorPlacement: function (error, element) {
-        error.addClass('invalid-feedback');
-        element.closest('.form-group').append(error);
-      },
-      highlight: function (element, errorClass, validClass) {
-        $(element).addClass('is-invalid');
-        $(element).removeClass('is-valid');
-      },
-      unhighlight: function (element, errorClass, validClass) {
-        $(element).removeClass('is-invalid');
-        $(element).addClass('is-valid');
-      }
-    });
-
-    $("#formCrearUnidad").submit(function(event){
-      event.preventDefault();
-      if ($("#formCrearUnidad").valid()) {
-        $.ajax({
-          url: "acciones",
-          type: "POST",
-          cache: false,
-          contentType: false,
-          processData: false,
-          data: new FormData(this),
-          success: function(data){
-            if (data == 1) {
-              $("#crearNombreUnidad").val("");
-              $("#crearDescripcionUnidad").val("");
-              listaUnidades();
-              $("#crearUnidad").modal("hide");
-              alertify.success("Se ha creado correctamente.");
-            }else{
-              alertify.error(data.replace(/['"]+/g, ''));
-            }
-          },
-          error: function(){
-            alertify.error("No se ha guardado.");
-          }
-        });
-      }
-    });
-
-
-    //Form de editar uniadad
-    $("#formEditarUnidad").submit(function(event){
-      event.preventDefault();
-      if($("#formEditarUnidad").valid()){
-        top.$("#cargando").modal("show");
-        $.ajax({
-          url: "acciones",
-          type: "POST",
-          cache: false,
-          contentType: false,
-          processData: false,
-          data: new FormData(this),
-          success: function(data){
-            if(data == 1){
-              listaUnidades();
-              datosUnidad($("#idUnidad").val());
-              $("#modalEditarUnidad").modal("hide");
-              alertify.success("La unidad se ha modificado correctamente.");
-            }else{
-              alertify.error(data.replace(/['"]+/g, ''));
-            }
-          },
-          error: function(){
-            alertify.error("Se ha editado la unidad."); 
-          },
-          complete: function(){
-            setTimeout(function() {
-              top.$("#cargando").modal("hide");
-            }, 1000);
-          }
-        });
-      }
-    });
-
-    $("#btn-abrirUnidad").on("click", function(){
-      dobleClick($(this).val());
-    });
-  });
-
-  function listaUnidades(){
-    $.ajax({
-      url: 'acciones',
-      type: 'POST',
-      dataType: 'html',
-      data: {accion: 'listaUnidades', idCurso: <?php echo($_GET['idCurso']); ?>},
-      success: function(data){
-        $("#tabla").dataTable().fnDestroy();
-        $("#contenido-tabla").empty();
-        $("#contenido-tabla").html(data);
-        definirdataTableDragAndDrop('#tabla');
-        $("#tabla").DataTable().on('row-reorder', function (e, diff, edit ) {
-          var cont = 0;
-          for ( var i=0, ien=diff.length ; i<ien ; i++ ) {
-            $(diff[i].node).addClass("reordered");
-            orden = diff[i].newData;
-            idUnidad = $(diff[i].node).attr("id");
-            //console.log(diff[i].newData);
-            //console.log($(diff[i].node).find("td:first").html());
-            //alert("id: " + $(diff[i].node).attr("id"));
-            //alert("Orden: " + diff[i].newData);
-            $.ajax({
-              url: 'acciones',
-              type: 'POST',
-              dataType: 'html',
-              async: false,
-              data: {accion: 'actualizarOrdenUnidades', idUnidad: idUnidad, orden: orden},
-              success: function(data){
-                if (data == "Ok") {
-                  cont++;
-                }else{
-                  alertify.error(data);
-                }
-              },
-              error: function(){
-                alertify.error("No se ha podido actualizar");
-              }
-            });
-          }
-
-          if (diff.length != 0) {
-            if (diff.length == cont) {
-              alertify.success("Se ha actualizado correctamente");
-            }else{
-              alertify.error("No se han actualizado 2");
-            }
-          }
-        });
-      },
-      error: function(){
-        alertify.error("Error al cargar la lista.");
-      }
-    });
-  }
-
-  function datosUnidad(id){
-    $.ajax({
-      url: 'acciones',
-      type: 'POST',
-      dataType: 'json',
-      data: {accion: 'datosUnidad', idUnidad: id},
-      success: function(data){
-        console.log(data);
-        //Habilitamos los bótones
-        $("#btn-editarUnidad").removeAttr('disabled');
-        $("#btn-editarUnidad").removeClass('disabled'); 
-
-        $("#btn-abrirUnidad").removeAttr('disabled');
-        $("#btn-abrirUnidad").removeClass('disabled');  
-        $("#btn-abrirUnidad").val(data.id);
-
-        //Llenamos los datos datos del formulario editar
-        $("#idUnidad").val(id);
-        $("#editNombreUnidad").val(data.nombre);
-        $("#editDescripcionUnidad").val(data.descripcion);
-
-        //Datos
-        $("#nombreUnidad").html(data.nombre);
-        $("#descripcionUnidad").html(data.descripcion);
-        $("#fechaCrecionUnidad").html(data.fecha_creacion);
-        $("#creadorUnidad").html(data.usuario);
-      },
-      error: function(){
-        alertify.error("No se han cargado los datos.");
-      }
-    });
-  }
-
-  function dobleClick(id){
-    window.location.href = "lecciones?idCurso=<?php echo($_GET['idCurso']); ?>&idUnidad=" + id;
-  }
+  
 </script>
 </html>
