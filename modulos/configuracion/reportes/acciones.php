@@ -42,18 +42,18 @@
     $db = new Bd();
     $db->conectar();
 
-    $sql = $db->consulta("SELECT fk_ciudad, m_nombre FROM mandino_usuarios INNER JOIN municipios ON m_id = fk_ciudad AND u_activo = 1 GROUP BY fk_ciudad ORDER BY m_nombre ASC");
+    $sql = $db->consulta("SELECT fk_ciudad, m_nombre FROM mandino_usuarios INNER JOIN municipios ON m_id = fk_ciudad INNER JOIN empresas_usuarios ON u_id = fk_usuario AND u_activo = 1 AND fk_empresa = :fk_empresa GROUP BY fk_ciudad ORDER BY m_nombre ASC", array(":fk_empresa" => $_REQUEST['empresa']));
 
     $db->desconectar();
 
     return json_encode($sql);
   }
 
-  function listaCursos(){
+  function listaCursosEmpresas(){
     $db = new Bd();
     $db->conectar();
 
-    $sql_cursos = $db->consulta("SELECT mc_id, mc_nombre FROM mandino_curso");
+    $sql_cursos = $db->consulta("SELECT mc_id, mc_nombre FROM mandino_curso INNER JOIN empresas_cursos ON mc_id = fk_curso WHERE fk_empresa = :fk_empresa", array(":fk_empresa" => $_REQUEST['empresa']));
 
     $db->desconectar();
 
@@ -77,7 +77,7 @@
     $db = new Bd();
     $db->conectar();
 
-    $sql_usuarios = $db->consulta("SELECT u_id, concat(u_nombre1, ' ', u_nombre2, ' ', u_apellido1, ' ', u_apellido2) AS nombre_completo, m_nombre FROM mandino_usuarios INNER JOIN municipios ON m_id = fk_ciudad WHERE u_activo = 1 AND fk_ciudad IN (" . $ciudades . ") ORDER BY nombre_completo ASC");
+    $sql_usuarios = $db->consulta("SELECT u_id, concat(u_nombre1, ' ', u_nombre2, ' ', u_apellido1, ' ', u_apellido2) AS nombre_completo, m_nombre FROM mandino_usuarios INNER JOIN municipios ON m_id = fk_ciudad INNER JOIN empresas_usuarios ON fk_usuario = u_id WHERE u_activo = 1 AND fk_ciudad IN (" . $ciudades . ") AND fk_empresa = :fk_empresa ORDER BY nombre_completo ASC", array(":fk_empresa" => $_REQUEST['empresa']));
 
     $sql_cursos = $db->consulta("SELECT mc_id, mc_nombre FROM mandino_curso");
 
