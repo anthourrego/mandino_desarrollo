@@ -62,36 +62,42 @@
 	<?php include_once($ruta_raiz . 'navBar.php'); ?>
   <!-- Contenido -->
   <div class="container-fluid mt-4">
-    <div class="d-flex justify-content-between mt-3 mb-3">
-      <div class="btn-group btn-group-toggle" data-toggle="buttons">
-        <label class="btn btn-secondary bg-primary active activoUser">
-          <i class="fas fa-user-check"></i> <input type="radio" class="activoUser" name="options" value="1" autocomplete="off" checked> Activos
-        </label>
-        <label class="btn btn-secondary activoUser">
-          <i class="fas fa-user-times"></i> <input type="radio" class="activoUser" name="options" value="0" autocomplete="off"> Inactivos
-        </label>
-      </div>
-      <?php  
-        if ($permisos->validarPermiso($usuario['id'], "usuarios_crear")) {
-          echo('<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#crearUsuario"><i class="fas fa-user-plus"></i> Crear</button>');
-        }
-      ?>
+    <div class="container mt-4 bg-white pt-3 pb-3 border rounded">
+      <select class="selectpicker form-control" name="empresa" id="empresa" data-live-search="true" data-size="5" title="Seleccione una empresa" data-selected-text-format="count > 3"></select>
     </div>
-    <table id="tabla" class="table table-bordered table-hover table-sm">
-      <thead>
-        <tr>
-          <th class="text-center">Ciudad</th>
-          <th class="text-center">Nro Documento</th>
-          <th class="text-center">Usuario</th>
-          <th class="text-center">Nombre</th>
-          <th class="text-center">Acciones</th>
-        </tr>
-      </thead>
-      <tbody id="contenido_tabla_coordinadores">
-    
-      </tbody>
-    </table>
-  </div>
+
+    <div id="contenido-usuarios" class="d-none">
+      <div class="d-flex justify-content-between mt-3 mb-3">
+        <div class="btn-group btn-group-toggle" data-toggle="buttons">
+          <label class="btn btn-secondary bg-primary active activoUser">
+            <i class="fas fa-user-check"></i> <input type="radio" class="activoUser" name="options" value="1" autocomplete="off" checked> Activos
+          </label>
+          <label class="btn btn-secondary activoUser">
+            <i class="fas fa-user-times"></i> <input type="radio" class="activoUser" name="options" value="0" autocomplete="off"> Inactivos
+          </label>
+        </div>
+        <?php  
+          if ($permisos->validarPermiso($usuario['id'], "usuarios_crear")) {
+            echo('<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#crearUsuario"><i class="fas fa-user-plus"></i> Crear</button>');
+          }
+        ?>
+      </div>
+      <table id="tabla" class="table table-bordered table-hover table-sm">
+        <thead>
+          <tr>
+            <th class="text-center">Ciudad</th>
+            <th class="text-center">Nro Documento</th>
+            <th class="text-center">Usuario</th>
+            <th class="text-center">Nombre</th>
+            <th class="text-center">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="contenido_tabla_coordinadores">
+      
+        </tbody>
+      </table>
+    </div>
+    </div>
 
   <div class="modal fade" id="crearUsuario" tabindex="-1" role="dialog" aria-labelledby="crearUsuarioLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
@@ -361,13 +367,10 @@
 ?>
 <script type="text/javascript">
   $(function(){
-    //Se carga la lista de usuario
-    cargarUsuarios($("input[name='options']:checked").val());
-
     $(".activoUser").on("click", function(){
       $(".activoUser").removeClass("bg-primary");
       $(this).addClass("bg-primary");
-      cargarUsuarios($("input", this).val());
+      cargarUsuarios($("input", this).val(), $("#empresa").val());
     });
 
     //Se carga la lista de empresas
@@ -382,12 +385,24 @@
           $("#empresas").append(`
             <option value="${data[i].e_id}">${data[i].e_nombre}</option>
           `);
+
+          $("#empresa").append(`
+            <option value="${data[i].e_id}">${data[i].e_nombre}</option>
+          `);
         }
         $("#empresas").selectpicker('refresh');
+        $("#empresa").selectpicker('refresh');
       },
       error: function(){
         alertify.error("No se ha cargado la lista de empresas.");
       }
+    });
+
+    //Formulario de selecion de la empresa
+    $("#empresa").on("change", function(){
+      //Se carga la lista de usuario
+      cargarUsuarios($("input[name='options']:checked").val(), $("#empresa").val());
+      $("#contenido-usuarios").removeClass("d-none");
     });
 
     //Caundo selecciones la empresas se habilitan los cursos
@@ -568,7 +583,7 @@
               setTimeout(function() {
                 top.$("#cargando").modal("hide");
                 $("#crearUsuario").modal("hide");
-                cargarUsuarios($("input[name='options']:checked").val());
+                cargarUsuarios($("input[name='options']:checked").val(), $("#empresa").val());
               }, 1000);
             }else{
               alertify.error(data);
@@ -596,7 +611,7 @@
             if (data == "Ok") {
               $("#modal-editarUsuario").modal("hide");
               $("#formEditarUsuario")[0].reset();
-              cargarUsuarios($("input[name='options']:checked").val());
+              cargarUsuarios($("input[name='options']:checked").val(), $("#empresa").val());
               alertify.success("Se ha actualizado el usuario");
             }else{
               alertify.error(data);
@@ -712,12 +727,13 @@
     }
   }
 
-  function cargarUsuarios(id){
+  function cargarUsuarios(id, empresas){
+    top.$("#cargando").modal("show");
     $.ajax({
       url: 'acciones',
       type: 'GET',
       dataType: 'html',
-      data: {accion: 'listaUsuario', habilitado: id},
+      data: {accion: 'listaUsuario', habilitado: id, empresa: empresas},
       success: function(data){
         $('[data-toggle="tooltip"]').tooltip('hide');
         $("#tabla").dataTable().fnDestroy();
@@ -730,6 +746,11 @@
       },
       error: function(){
         alertify.error("No han cargado los datos");
+      },
+      complete: function(){
+        setTimeout(function() {
+          top.$("#cargando").modal("hide");
+        }, 1000);
       }
     });
   }
@@ -741,7 +762,7 @@
       dataType: 'html',
       data: {accion: "inHabilitarUsuario", id: id, activo: activo},
       success: function(){
-        cargarUsuarios($("input[name='options']:checked").val());
+        cargarUsuarios($("input[name='options']:checked").val(), $("#empresa").val());
         if (activo == 1) {
           alertify.success("Usuario habilitado");
         }else{

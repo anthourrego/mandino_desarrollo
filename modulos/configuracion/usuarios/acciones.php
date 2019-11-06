@@ -99,7 +99,7 @@
     $cursos = 0;
     $inhabilitar = 0; 
 
-    $usuarios = $db->consulta("SELECT * FROM mandino_usuarios INNER JOIN municipios ON m_id = fk_ciudad WHERE u_activo = :u_activo", array(":u_activo" => $_GET['habilitado']));
+    $usuarios = $db->consulta("SELECT * FROM mandino_usuarios INNER JOIN municipios ON m_id = fk_ciudad INNER JOIN empresas_usuarios ON fk_usuario = u_id WHERE u_activo = :u_activo AND fk_empresa = :fk_empresa", array(":u_activo" => $_GET['habilitado'], ":fk_empresa" => $_GET['empresa']));
 
     $db->desconectar();
     
