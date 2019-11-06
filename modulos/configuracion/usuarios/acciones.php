@@ -142,34 +142,34 @@
                         <td class='d-flex justify-content-around'>";
         
         if($ingresar_usuario == 1){
-          $respuesta .= "<button class='btn btn-info' onClick='verUsuario(". $usuarios[$i]['u_id'] .")' data-toggle='tooltip' title='Ingresar a usuario'><i class='far fa-address-card'></i></button>";
+          $respuesta .= "<button class='btn btn-info btn-sm' onClick='verUsuario(". $usuarios[$i]['u_id'] .")' data-toggle='tooltip' title='Ingresar a usuario'><i class='far fa-address-card'></i></button>";
         }
         
         if ($log == 1) {
-          $respuesta .= "<button class='btn btn-info' onClick='logUsuarios(". $usuarios[$i]['u_id'] .")' data-toggle='tooltip' title='Logs'><i class='fas fa-list-alt'></i></button>";
+          $respuesta .= "<button class='btn btn-info btn-sm' onClick='logUsuarios(". $usuarios[$i]['u_id'] .")' data-toggle='tooltip' title='Logs'><i class='fas fa-list-alt'></i></button>";
         }
         
         if ($taller_intentos == 1) {
-          $respuesta .= "<button class='btn btn-info' onClick='estadoUsuario(". $usuarios[$i]['u_id'] .")' data-toggle='tooltip' title='Progreso'><i class='far fa-calendar-check'></i></button>";
+          $respuesta .= "<button class='btn btn-info btn-sm' onClick='estadoUsuario(". $usuarios[$i]['u_id'] .")' data-toggle='tooltip' title='Progreso'><i class='far fa-calendar-check'></i></button>";
         }
 
         if ($editar == 1) {
-          $respuesta .= "<button class='btn btn-success' onClick='editarUsuario(". $usuarios[$i]['u_id'] .")' data-toggle='tooltip' title='Editar'><i class='fas fa-user-edit'></i></button>";
+          $respuesta .= "<button class='btn btn-success btn-sm' onClick='editarUsuario(". $usuarios[$i]['u_id'] .")' data-toggle='tooltip' title='Editar'><i class='fas fa-user-edit'></i></button>";
         }
 
         if ($per == 1) {
-          $respuesta .= "<button class='btn btn-info' onClick='permisos(". $usuarios[$i]['u_id'] .")' data-toggle='tooltip' title='Permisos'><i class='fas fa-user-shield'></i></button>";
+          $respuesta .= "<button class='btn btn-info btn-sm' onClick='permisos(". $usuarios[$i]['u_id'] .")' data-toggle='tooltip' title='Permisos'><i class='fas fa-user-shield'></i></button>";
         }
 
         if ($cursos == 1) {
-          $respuesta .= "<button class='btn btn-secondary' onClick='cursos(". $usuarios[$i]['u_id'] .")' data-toggle='tooltip' title='Cursos'><i class='fas fa-book'></i></button>";
+          $respuesta .= "<button class='btn btn-secondary btn-sm' onClick='cursos(". $usuarios[$i]['u_id'] .")' data-toggle='tooltip' title='Cursos'><i class='fas fa-book'></i></button>";
         }
 
         if ($inhabilitar == 1) {
           if ($usuarios[$i]['u_activo'] == 1) {
-            $respuesta .= "<button class='btn btn-danger' onClick='inHabilitarUsuario(" . $usuarios[$i]['u_id'] . ", 0)' data-toggle='tooltip' title='Inhabilitar'><i class='fas fa-user-minus'></i></button>";
+            $respuesta .= "<button class='btn btn-danger btn-sm' onClick='inHabilitarUsuario(" . $usuarios[$i]['u_id'] . ", 0)' data-toggle='tooltip' title='Inhabilitar'><i class='fas fa-user-minus'></i></button>";
           } else {
-            $respuesta .= "<button class='btn btn-primary' onClick='inHabilitarUsuario(" . $usuarios[$i]['u_id'] . ", 1)' data-toggle='tooltip' title='Habilitar'><i class='fas fa-user-plus'></i></button>";            
+            $respuesta .= "<button class='btn btn-primary btn-sm' onClick='inHabilitarUsuario(" . $usuarios[$i]['u_id'] . ", 1)' data-toggle='tooltip' title='Habilitar'><i class='fas fa-user-plus'></i></button>";            
           }
           
         }
@@ -611,8 +611,11 @@
       
       $db->sentencia("INSERT INTO empresas_usuarios(fk_usuario, fk_empresa, eu_fechaCreacion) VALUES(:fk_usuario, :fk_empresa, :eu_fechaCreacion)", array(":fk_usuario" => $id_usu[0]['u_id'], ":fk_empresa" => 2, ":eu_fechaCreacion" => date("Y-m-d H:i:s")));
    
-
       $db->sentencia("INSERT INTO mandino_curso_usuario(fk_mc, id_usuario, fecha_creacion, id_creador, mcu_activo) VALUES(:fk_mc, :id_usuario, :fecha_creacion, :id_creador, 1)", array(":fk_mc" => 2, ":id_usuario" => $id_usu[0]['u_id'], ":fecha_creacion" => date('Y-m-d H:i:s'), ":id_creador" => 1));
+
+      $db->sentencia("INSERT INTO mandino_curso_usuario(fk_mc, id_usuario, fecha_creacion, id_creador, mcu_activo) VALUES(:fk_mc, :id_usuario, :fecha_creacion, :id_creador, 1)", array(":fk_mc" => 3, ":id_usuario" => $id_usu[0]['u_id'], ":fecha_creacion" => date('Y-m-d H:i:s'), ":id_creador" => 1));
+
+      $db->sentencia("INSERT INTO mandino_curso_usuario(fk_mc, id_usuario, fecha_creacion, id_creador, mcu_activo) VALUES(:fk_mc, :id_usuario, :fecha_creacion, :id_creador, 1)", array(":fk_mc" => 4, ":id_usuario" => $id_usu[0]['u_id'], ":fecha_creacion" => date('Y-m-d H:i:s'), ":id_creador" => 1));
 
       $respuesta = "Ok";
     }else{
