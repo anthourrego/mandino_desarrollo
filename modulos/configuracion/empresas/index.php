@@ -22,7 +22,7 @@
   $usuario = $session->get("usuario");
   $acordeon = "";
 
-  if ($permisos->validarPermiso($usuario['id'], 'permisos') == 0) {
+  if ($permisos->validarPermiso($usuario['id'], 'empresas') == 0) {
     header('Location: ' . $ruta_raiz . 'modulos/cursos/cursos');
   }
 
