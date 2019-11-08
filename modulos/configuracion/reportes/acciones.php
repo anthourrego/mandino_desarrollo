@@ -77,7 +77,7 @@
     $db = new Bd();
     $db->conectar();
 
-    $sql_usuarios = $db->consulta("SELECT u_id, concat(u_nombre1, ' ', u_nombre2, ' ', u_apellido1, ' ', u_apellido2) AS nombre_completo, m_nombre FROM mandino_usuarios INNER JOIN municipios ON m_id = fk_ciudad INNER JOIN empresas_usuarios ON fk_usuario = u_id WHERE u_activo = 1 AND fk_ciudad IN (" . $ciudades . ") AND fk_empresa = :fk_empresa ORDER BY nombre_completo ASC", array(":fk_empresa" => $_REQUEST['empresa']));
+    $sql_usuarios = $db->consulta("SELECT u_id, concat(u_nombre1, ' ', u_nombre2, ' ', u_apellido1, ' ', u_apellido2) AS nombre_completo, m_nombre, empresa_secundaria FROM mandino_usuarios INNER JOIN municipios ON m_id = fk_ciudad INNER JOIN empresas_usuarios ON fk_usuario = u_id WHERE u_activo = 1 AND fk_ciudad IN (" . $ciudades . ") AND fk_empresa = :fk_empresa ORDER BY nombre_completo ASC", array(":fk_empresa" => $_REQUEST['empresa']));
 
     $sql_cursos = $db->consulta("SELECT mc_id, mc_nombre FROM mandino_curso");
 
@@ -85,7 +85,8 @@
     $resp .= '<thead class="thead-light text-center">
                 <tr>
                   <th>Ciudad</th>
-                  <th>Nombre</th>';
+                  <th>Nombre</th>
+                  <th>Empresa</th>';
 
     foreach ($_REQUEST['cursos'] as $valor) {
       $curso_sql = $db->consulta("SELECT mc_nombre FROM mandino_curso WHERE mc_id = :mc_id", array(":mc_id" => $valor));
@@ -98,7 +99,8 @@
     $resp .= "<tbody>";
     for ($i=0; $i < $sql_usuarios['cantidad_registros']; $i++) { 
       $resp .= "<tr><td>" . $sql_usuarios[$i]['m_nombre'] . "</td>
-                    <td>" . $sql_usuarios[$i]['nombre_completo'] . "</td>";
+                    <td>" . $sql_usuarios[$i]['nombre_completo'] . "</td>
+                    <td>" . $sql_usuarios[$i]['empresa_secundaria'] . "</td>";
       foreach ($_REQUEST['cursos'] as $valor) {
         $resp .= "<td class='text-center'>" . porcentajeCurso($valor, $sql_usuarios[$i]['u_id']) . "%</td>";
       }

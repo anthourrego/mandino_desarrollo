@@ -590,7 +590,7 @@
     $respuesta = "";
 
     if ((validarNroDocumento() == 0) && (validarUsuario() == 0)) {
-      $db->sentencia("INSERT INTO mandino_usuarios(u_nro_documento, u_usuario, u_password, u_nombre1, u_nombre2, u_apellido1, u_apellido2, u_foto, u_correo, u_telefono, fk_mt, u_fecha_creacion, u_cambio_pass, u_activo, fk_ciudad) VALUES (:u_nro_documento, :u_usuario, :u_password, :u_nombre1, :u_nombre2, :u_apellido1, :u_apellido2, :u_foto, :u_correo, :u_telefono, :fk_mt, :u_fecha_creacion, :u_cambio_pass, :u_activo, :fk_ciudad)", array(":u_nro_documento" => $_POST['nro_doc'], 
+      $db->sentencia("INSERT INTO mandino_usuarios(u_nro_documento, u_usuario, u_password, u_nombre1, u_nombre2, u_apellido1, u_apellido2, u_foto, u_correo, u_telefono, fk_mt, u_fecha_creacion, u_cambio_pass, u_activo, fk_ciudad, empresa_secundaria) VALUES (:u_nro_documento, :u_usuario, :u_password, :u_nombre1, :u_nombre2, :u_apellido1, :u_apellido2, :u_foto, :u_correo, :u_telefono, :fk_mt, :u_fecha_creacion, :u_cambio_pass, :u_activo, :fk_ciudad, :empresa_secundaria)", array(":u_nro_documento" => $_POST['nro_doc'], 
               ":u_usuario" => $_POST['usuario'], 
               ":u_password" => encriptarPass($_POST['nro_doc']),
               ":u_nombre1" => $_POST['primer_nombre'], 
@@ -604,7 +604,8 @@
               ":u_fecha_creacion" => date('Y-m-d H:i:s'), 
               ":u_cambio_pass" => date('Y-m-d'), 
               ":u_activo" => 1,
-              ":fk_ciudad" => $_REQUEST['ciudades']
+              ":fk_ciudad" => $_REQUEST['ciudades'],
+              ":empresa_secundaria" => $_REQUEST['empresa']
               ));
               
       $id_usu = $db->consulta("SELECT * FROM mandino_usuarios WHERE u_nro_documento = :u_nro_documento", array(":u_nro_documento" => $_POST['nro_doc']) );

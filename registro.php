@@ -88,6 +88,19 @@
         <label for="">Ciudades <span class="text-danger">*</span></label>
         <select class="selectpicker form-control" required disabled id="ciudades" name="ciudades" data-live-search="true" data-size="5" title="Seleccione una ciudad"></select>
       </div>
+      <div class="form-group col-12 col-md-6">
+        <label for="">Empresa <span class="text-danger">*</span></label>
+        <select class="selectpicker form-control" required id="empresa" name="empresa" data-live-search="true" data-size="5" title="Seleccione una empresa">
+          <option value="Navarro">Navarro</option>
+          <option value="Luma">Luma</option>
+          <option value="Electrocreditos del cauca">Electrocreditos del cauca</option>
+          <option value="Diselco">Diselco</option>
+          <option value="Lagobo">Lagobo</option>
+          <option value="Emuebles">Emuebles</option>
+          <option value="Asyco">Asyco</option>
+          <option value="Best buy">Best buy</option>
+        </select>
+      </div>
     </div>
     <div class="text-center mt-3">
       <button type="reset" class="btn btn-secondary"><i class="fas fa-redo"></i> Vaciar Campos</button>
